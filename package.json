@@ -13,7 +13,7 @@
     "url": "https://github.com/jocker7777/oag_it_ma/issues"
   },
   "homepage": "https://github.com/jocker7777/oag_it_ma#readme",
-    "scripts": {
+  "scripts": {
     "dev": "nodemon server",
     "start": "node server"
   },
@@ -25,13 +25,12 @@
     "express": "^4.18.2",
     "helmet": "^6.0.1",
     "jsonwebtoken": "^9.0.0",
+    "mariadb": "^3.2.0",
     "morgan": "^1.10.0",
     "ua-parser-js": "^1.0.33",
-    "yup": "^1.0.0",
-	"mysql2": "^3.1.2"
+    "yup": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   }
-  
 }

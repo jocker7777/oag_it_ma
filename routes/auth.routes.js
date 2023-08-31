@@ -7,7 +7,6 @@ import * as login from "../controllers/auth/login.controllers.js";
 const router = express.Router();
 // -- insecure route --
 router.post("/login", login.login);
-router.post("/preLogin", login.preLogin);
 
 // -- secure route --
 //router.get("/logout/", verifyToken, logout);

@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 dotenv.config();
-dotenv.config({ path: "./env/mysql_connection.env" });
+dotenv.config({ path: "./env/mariaDB_connection.env" });
 dotenv.config({ path: "./env/token_sign.env" });
 import express from "express";
 import bodyParser from "body-parser";
@@ -23,7 +23,7 @@ app.use(cors());
 // -- router --
 import authRoutes from "./routes/auth.routes.js";
 app.use("/auth", authRoutes);
-app.use("/member", memberRoutes);
+//app.use("/member", memberRoutes);
 
 // -- check agent --
 // app._router.use(async (req, res, next) => {

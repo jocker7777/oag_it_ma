@@ -1,21 +1,24 @@
-import * as mysql from "mysql2";
+import * as mariadb from "mariadb";
 
 const connect_db = () => {
   return new Promise((resolve, reject) => {
-    try {
-      var pool = mysql.createPool({
-        connectionLimit: 10,
-        host: process.env.MYSQL_URL,
-        port: process.env.MYSQL_PORT,
-        user: process.env.MYSQL_USERNAME,
-        password: process.env.MYSQL_PASSWORD,
-        database: process.env.MYSQL_DATABASE,
-        timezone: process.env.MYSQ_TIMEZONE,
+    const pool = mariadb.createPool({
+      connectionLimit: 10,
+      host: process.env.MARIADB_URL,
+      port: process.env.MARIADB_PORT,
+      user: process.env.MARIADB_USERNAME,
+      password: process.env.MARIADB_PASSWORD,
+      database: process.env.MARIADB_DATABASE,
+    });
+
+    pool
+      .getConnection()
+      .then((conn) => {
+        resolve(conn);
+      })
+      .catch((err) => {
+        reject(err);
       });
-      resolve(pool.promise());
-    } catch (err) {
-      reject(err);
-    }
   });
 };
 
