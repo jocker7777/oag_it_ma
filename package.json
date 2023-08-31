@@ -1,0 +1,37 @@
+{
+  "name": "oag_it_ma",
+  "version": "1.0.0",
+  "description": "it_ma",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jocker7777/oag_it_ma.git"
+  },
+  "author": "Jocker",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jocker7777/oag_it_ma/issues"
+  },
+  "homepage": "https://github.com/jocker7777/oag_it_ma#readme",
+    "scripts": {
+    "dev": "nodemon server",
+    "start": "node server"
+  },
+  "type": "module",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
+    "ua-parser-js": "^1.0.33",
+    "yup": "^1.0.0",
+	"mysql2": "^3.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+  
+}
