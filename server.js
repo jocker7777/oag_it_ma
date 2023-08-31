@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 dotenv.config({ path: "./env/mariaDB_connection.env" });
-dotenv.config({ path: "./env/token_sign.env" });
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";

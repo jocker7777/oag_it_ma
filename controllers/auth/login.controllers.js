@@ -1,6 +1,6 @@
-import crypto from "crypto";
-import parser from "ua-parser-js";
 import * as yup from "yup";
+import bcrypt from "bcrypt";
+import { signToken } from "../../publics/token.middleware";
 
 const loginSchema = yup.object({
   username: yup.string().required("Username required"),
@@ -12,11 +12,14 @@ export const login = async (req, res) => {
     const dataRows = await model.getLoginInfo(data.username).catch((e) => {
       throw new Error(e);
     });
-    if (!tokenData[0]?.id) {
-      res.status(401).end();
-    }
-    res.json({ message: "success" });
+    if (!dataRows[0]?.id) return res.status(401).end();
+    const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!passwordMatch) return res.status(401).end();
+    const token = await signToken(dataRows[0]);
+    res.json({ token: token });
   } catch (error) {
+    if (error.type == "matches")
+      return res.status(400).json({ message: error.message });
     res.status(500).end();
   }
 };
