@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
 import * as fs from "fs";
-
-const key = fs.readFileSync("../env/tokenPrivateKey.key");
+import * as path from "path";
+const key = fs
+  .readFileSync(path.resolve((path.resolve(), "env/tokenPrivateKey.key")), {
+    encoding: "utf8",
+  })
+  .toString();
 
 export const signToken = (data, expire) => {
   return new Promise((resolve, reject) => {
