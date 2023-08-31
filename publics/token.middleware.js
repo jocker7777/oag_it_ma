@@ -7,7 +7,7 @@ const key = fs
   })
   .toString();
 
-export const signToken = (data, expire) => {
+export const signToken = (data, expire = 604800) => {
   return new Promise((resolve, reject) => {
     jwt.sign(data, key, { expiresIn: expire }, (err, token) => {
       ond;
