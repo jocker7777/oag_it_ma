@@ -1,10 +1,10 @@
-export const insertUser = (email) => {
+export const insertUser = (data) => {
   return new Promise(async (resolve, reject) => {
     const data = await globalDB
-      .query(`INSERT INTO user ( email,  password) VALUES ( ?, ? )`, [
-        email,
-        password,
-      ])
+      .query(
+        `INSERT INTO user ( username,  password, email) VALUES ( ?, ?, ? )`,
+        [data.username, data.password, data.email]
+      )
       .catch((e) => {
         if (e.code == "ER_DUP_ENTRY")
           return reject({
