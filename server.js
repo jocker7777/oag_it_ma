@@ -1,42 +1,86 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "./env/mariaDB_connection.env" });
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import connect_db from "./publics/db.connection.js";
-import parser from "ua-parser-js";
-
-// -- express setting --
+const express = require("express");
+const mysql = require("mysql2");
 const app = express();
+const port =  5500;
+
+// Middleware to parse JSON requests
 app.use(express.json());
-app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(morgan("common"));
-app.use(bodyParser.json({ limit: "30mb", extended: true }));
-app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
 
-// -- router --
-import authRoutes from "./routes/auth.routes.js";
-app.use("/auth", authRoutes);
-//app.use("/member", memberRoutes);
+// Create a MySQL database connection
+const db = mysql.createConnection({
+  host: "172.16.10.151",
+  user: "eticket",
+  password: "p@ssw0rd",
+  database: "eticket",
+});
 
-// -- check agent --
-// app._router.use(async (req, res, next) => {
-//   const access_info = parser(req.headers["user-agent"]);
-//   if (!access_info.browser?.name?.trim() && !access_info.device?.name?.trim())
-//     return res.status(400).end();
-//   console.log(typeof access_info.browser.name);
+db.connect((err) => {
+  if (err) {
+    console.error("Error connecting to MySQL:", err);
+    return;
+  }
+  console.log("Connected to MySQL");
+});
+
+// Define your API routes here
+app.get("/", (req, res) => {
+  res.send("Welcome to your REST API!");
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+// Get all todos
+app.get("/user", (req, res) => {
+  //console.log(`Server is running on port ${port}`);
+  db.query("SELECT * FROM oag_inventory", (err, results) => {
+    if (err) {
+      console.error("Error fetching todos:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Create a new todo
+// app.post('/todos', (req, res) => {
+//   const { title, completed } = req.body;
+//   db.query('INSERT INTO todos (title, completed) VALUES (?, ?)', [title, completed], (err, result) => {
+//     if (err) {
+//       console.error('Error creating todo:', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//       return;
+//     }
+//     res.status(201).json({ id: result.insertId, title, completed });
+//   });
 // });
 
-// -- database --
-const db_connection = await connect_db().catch((e) => {
-  throw new Error("cannot connect to db.");
-});
-global.globalDB = db_connection;
+// Update a todo by ID
+// app.put('/todos/:id', (req, res) => {
+//   const { id } = req.params;
+//   const { title, completed } = req.body;
+//   db.query('UPDATE todos SET title=?, completed=? WHERE id=?', [title, completed, id], (err) => {
+//     if (err) {
+//       console.error('Error updating todo:', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//       return;
+//     }
+//     res.status(200).json({ id, title, completed });
+//   });
+// });
 
-app.listen(3000);
-console.info("Express started on port 3000");
+// Delete a todo by ID
+// app.delete('/todos/:id', (req, res) => {
+//   const { id } = req.params;
+//   db.query('DELETE FROM todos WHERE id=?', [id], (err) => {
+//     if (err) {
+//       console.error('Error deleting todo:', err);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//       return;
+//     }
+//     res.status(204).send();
+//   });
+// });
