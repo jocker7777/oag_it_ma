@@ -4,6 +4,10 @@ const mysql = require('mysql2');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const usersRoutes = require("./routes/user-routes");
+//const mousRoutes = require("./routes/mou-routes");
+
+
 // การเชื่อมต่อกับ MySQL
 const db = mysql.createConnection({
     connectionLimit: 10,
