@@ -10,7 +10,7 @@ module.exports.logIn = async (req, res) => {
       password: yup.string().required(),
     });
     let loginData = await userSchema.validate(req.body).catch((e) => {
-      throw { code: 300 };
+      throw { code: 400 };
     });
     //-- End Validate body data--
 
@@ -37,7 +37,6 @@ module.exports.logIn = async (req, res) => {
     //-- end sign token --
     res.json({ token: token });
   } catch (e) {
-    console.table(e);
     if (!e.code) {
       return res.status(500).end();
     }
