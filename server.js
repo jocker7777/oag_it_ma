@@ -1,42 +1,42 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: "./env/mariaDB_connection.env" });
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import connect_db from "./publics/db.connection.js";
-import parser from "ua-parser-js";
-
-// -- express setting --
+const express = require("express");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
 const app = express();
-app.use(express.json());
-app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(morgan("common"));
+const port = process.env.PORT || 3000;
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
-app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
-
-// -- router --
-import authRoutes from "./routes/auth.routes.js";
+//const usersRoutes = require("./routes/user-routes");
+const authRoutes = require("./routes/auth-routes");
 app.use("/auth", authRoutes);
-//app.use("/member", memberRoutes);
+//const mousRoutes = require("./routes/mou-routes");
 
-// -- check agent --
-// app._router.use(async (req, res, next) => {
-//   const access_info = parser(req.headers["user-agent"]);
-//   if (!access_info.browser?.name?.trim() && !access_info.device?.name?.trim())
-//     return res.status(400).end();
-//   console.log(typeof access_info.browser.name);
-// });
-
-// -- database --
-const db_connection = await connect_db().catch((e) => {
-  throw new Error("cannot connect to db.");
+// การเชื่อมต่อกับ MySQL
+const db = mysql.createConnection({
+  connectionLimit: 10,
+  host: "172.16.10.151",
+  port: 3306,
+  user: "eticket",
+  password: "p@ssw0rd",
+  database: "eticket",
+  insecureAuth: true,
 });
-global.globalDB = db_connection;
 
-app.listen(3000);
-console.info("Express started on port 3000");
+db.connect((err) => {
+  if (err) {
+    throw err;
+  }
+  global.globalDB = db;
+  console.log("Connected to MySQL");
+});
+
+// สร้าง API เพื่อดึงข้อมูล
+app.get("/api/oag_office", (req, res) => {
+  const sql = "SELECT * FROM oag_office LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ
+  db.query(sql, (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+});
+// เริ่มต้นเซิร์ฟเวอร์
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
