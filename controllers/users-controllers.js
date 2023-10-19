@@ -1,4 +1,4 @@
-const HttpError = require("../models/http-error");
+//const HttpError = require("../models/http-error");
 //const Member = require("../models/Member");
 //const bcrypt = require('bcrypt');
 
