@@ -1,6 +1,6 @@
 const HttpError = require("../models/http-error");
-const Member = require("../models/Member");
-const bcrypt = require('bcrypt');
+//const Member = require("../models/Member");
+//const bcrypt = require('bcrypt');
 
 //-----------------------------------sipup--------------------
 const signup = async (req, res, next) => {
@@ -103,7 +103,26 @@ const login = async (req, res, next) => {
   }
 };
 
+
+ //-------------readall---------------
+ const readall = async (req, res) => {
+  // const id = parseInt(req.body.id);
+  // const client = new MongoClient(uri);
+  // await client.connect();
+  // const users = await client.db("mydb").collection("users").find({}).toArray();
+  // await client.close();
+  console.log('finish');
+
+  //const users = await Mou.find({});
+
+  //res.status(200).send(users);
+};
+
+  
+
+
  
 
 exports.signup = signup;
 exports.login = login;
+exports.readall = readall;
