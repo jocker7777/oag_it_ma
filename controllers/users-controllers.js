@@ -101,7 +101,7 @@ const login = async (req, res, next) => {
 //-------------readall---------------
 const readall = async (req, res) => {
   console.log("finish");
-  const sql = 'SELECT * FROM oag_user';
+  const sql = 'SELECT * FROM oag_user LIMIT 10';
   db.query(sql, (err, results) => {
     if (err) {
       console.error('Error executing query:', err);

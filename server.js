@@ -1,5 +1,5 @@
 const express = require("express");
-const mysql = require("mysql2");
+
 const db = require('./connectdb'); // Import the MySQL connection
 const app = express();
 const port = process.env.PORT || 3500;
