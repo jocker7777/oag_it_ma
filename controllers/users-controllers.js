@@ -1,67 +1,19 @@
 //const HttpError = require("../models/http-error");
 //const Member = require("../models/Member");
 //const bcrypt = require('bcrypt');
+
 const db = require('../connectdb');
 
+
+
 //-----------------------------------sipup--------------------
-const signup = async (req, res, next) => {
-  le.log(req.body); //req.body คือค่าทั้งหมดที่ส่งมาจาก front
+const create = async (req, res, next) => {
 
-  const data = req.body.data;
-  console.log("test2");
+  const data = req.body;
+  console.table(data); //req.body คือค่าทั้งหมดที่ส่งมาจาก front
+  console.table(data.LastName); //req.body คือค่าทั้งหมดที่ส่งมาจาก front
+}
 
-  const firstName = data.firstName;
-  const surName = data.surName;
-  const idCard = data.idCard;
-  const userName = data.userName;
-  const password = data.password;
-
-  const hash = bcrypt.hashSync(password, 10); //เข้ารหัสpassword ด้วย bcry
-
-  const agency = data.agency;
-  const birthday = data.birthday;
-  const tel = data.tel;
-  const email = data.email;
-  const typeUser = data.typeUser;
-  const createDate = (now = new Date());
-
-  let existingUser;
-  try {
-    existingUser = await Member.findOne({ idCard: idCard });
-  } catch (err) {
-    const error = new HttpError(
-      "Signing up failed, please try again later.aaaaaaa",
-      500
-    );
-    return next(error);
-  }
-
-  const createdMember = new Member({
-    firstName,
-    surName,
-    email,
-    userName,
-    hash,
-    agency,
-    birthday,
-    tel,
-    typeUser,
-    idCard,
-    createDate,
-  });
-  await createdMember.save();
-  try {
-    await createdMember.save();
-  } catch (err) {
-    const error = new HttpError(
-      "Signing up failed, please try again.joooo",
-      500
-    );
-    return next(error);
-  }
-  res.status(201).json({ Member: createdMember.toObject({ getters: true }) });
-  console.log("finish");
-};
 
 //-------------------login-------------------------------------
 
@@ -113,7 +65,7 @@ const readall = async (req, res) => {
  
 };
 
-exports.signup = signup;
+exports.create = create;
 exports.login = login;
 exports.readall = readall;
 

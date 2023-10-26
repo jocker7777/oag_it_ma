@@ -1,8 +1,13 @@
 const express = require("express");
+var bodyParser = require("body-parser");
 
 const db = require('./connectdb'); // Import the MySQL connection
 const app = express();
 const port = process.env.PORT || 3500;
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const usersRoutes = require("./routes/user-routes");
 //const mousRoutes = require("./routes/mou-routes");
