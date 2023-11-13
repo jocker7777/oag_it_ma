@@ -6,13 +6,44 @@ const db = require('../connectdb');
 
 
 
-//-----------------------------------sipup--------------------
+//-----------------------------------create_admin--------------------
 const create = async (req, res, next) => {
+  try {
+    const data = req.body;
+    const { PrefixName, FirstName, LastName, Telephone, PersonID, Email, OfficeName, ProvinceName, PositionName, Password } = data;
 
-  const data = req.body;
-  console.table(data); //req.body คือค่าทั้งหมดที่ส่งมาจาก front
-  console.table(data.LastName); //req.body คือค่าทั้งหมดที่ส่งมาจาก front
-}
+    // ดึงค่า user ID สูงสุดปัจจุบันจากฐานข้อมูล
+    const getMaxUserIdSql = 'SELECT MAX(UserID) AS maxUserId FROM `oag_user`';
+    const maxUserIdResult = await db.promise().query(getMaxUserIdSql);
+
+    let nextUserId = 1; // ตั้งค่าเริ่มต้นที่ 1 หากยังไม่มีผู้ใช้ในฐานข้อมูล
+
+    if (maxUserIdResult[0].length > 0 && maxUserIdResult[0][0].maxUserId !== null) {
+      nextUserId = maxUserIdResult[0][0].maxUserId + 1;
+    }
+
+    console.log('Next User ID:', nextUserId);
+    let OfficeID = 6 ;
+    // อัปเดต user ID ในอ็อบเจ็กต์ข้อมูล
+    data.UserID = nextUserId;
+    
+
+    const insertSql = 'INSERT INTO `oag_user`(`UserID`, `PersonID`,`PrefixID`, `PrefixName`, `FirstName`, `LastName`,`FirstNameEng`,`LastNameEng`, `Telephone`,  `Email`,  `PositionName`,  `OfficeID`, `Password`) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?,?, ?, ?)';
+    const insertValues = [nextUserId,PersonID,null, PrefixName, FirstName, LastName,null,null,Telephone,  Email, PositionName,OfficeID, Password];
+
+    // แทรกข้อมูลลงในฐานข้อมูล
+    const insertResult = await db.promise().query(insertSql, insertValues);
+
+    console.log('Data saved to MySQL:', insertResult);
+    res.status(201).send('Data saved successfully');
+  } catch (error) {
+    console.error('Error saving data to MySQL: ', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+
+
 
 
 //-------------------login-------------------------------------
@@ -62,6 +93,7 @@ const readall = async (req, res) => {
       res.status(200).json(results);
     }
   });
+ 
  
 };
 
