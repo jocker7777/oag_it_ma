@@ -116,7 +116,8 @@ const deleteuseradmin = async (req, res, next) => {
     }
 
     // ถ้ามีข้อมูล UserID ที่ต้องการลบ
-    const deleteSql = 'DELETE FROM `oag_user` WHERE `UserID` = ?';
+    //const deleteSql = 'DELETE FROM `oag_user` WHERE `UserID` = ?';
+    const deleteSql = 'UPDATE `oag_user` SET `ActiveStatus` = 1 WHERE `UserID` = ?';
     const deleteResult = await db.promise().query(deleteSql, [userIdToDelete]);
 
     console.log('Data deleted from MySQL:', deleteResult);
