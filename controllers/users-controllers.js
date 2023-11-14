@@ -6,11 +6,11 @@ const db = require('../connectdb');
 
 
 
-//-----------------------------------create_admin--------------------
-const create = async (req, res, next) => {
+//-----------------------------------create_user_admin--------------------
+const createuseradmin = async (req, res, next) => {
   try {
     const data = req.body;
-    const { PrefixName, FirstName, LastName, Telephone, PersonID, Email, OfficeName, ProvinceName, PositionName, Password } = data;
+    const { PrefixName, FirstName, LastName, Telephone, PersonID, Email, OfficeID, ProvinceName, PositionName, Password } = data;
 
     // ดึงค่า user ID สูงสุดปัจจุบันจากฐานข้อมูล
     const getMaxUserIdSql = 'SELECT MAX(UserID) AS maxUserId FROM `oag_user`';
@@ -23,7 +23,7 @@ const create = async (req, res, next) => {
     }
 
     console.log('Next User ID:', nextUserId);
-    let OfficeID = 6 ;
+    //let OfficeID = 6 ;
     // อัปเดต user ID ในอ็อบเจ็กต์ข้อมูล
     data.UserID = nextUserId;
     
@@ -97,7 +97,38 @@ const readall = async (req, res) => {
  
 };
 
-exports.create = create;
+//-------------User_Delete_Admin---------------
+const deleteuseradmin = async (req, res, next) => {
+  try {
+
+    const userIdToDelete = req.body.UserID; // หรือจะใช้ req.body.userId ก็ได้ตามการใช้งาน
+    console.log(req.body);
+    console.log(userIdToDelete);
+
+    // เช็คว่ามีข้อมูล UserID ที่ต้องการลบหรือไม่
+    const checkUserSql = 'SELECT * FROM `oag_user` WHERE `UserID` = ?';
+    const checkUserResult = await db.promise().query(checkUserSql, [userIdToDelete]);
+
+    if (checkUserResult[0].length === 0) {
+      // ถ้าไม่มีข้อมูล UserID ที่ต้องการลบ
+      res.status(404).send('User not found');
+      return;
+    }
+
+    // ถ้ามีข้อมูล UserID ที่ต้องการลบ
+    const deleteSql = 'DELETE FROM `oag_user` WHERE `UserID` = ?';
+    const deleteResult = await db.promise().query(deleteSql, [userIdToDelete]);
+
+    console.log('Data deleted from MySQL:', deleteResult);
+    res.status(200).send('Data deleted successfully');
+  } catch (error) {
+    console.error('Error deleting data from MySQL: ', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+exports.createuseradmin = createuseradmin;
+exports.deleteuseradmin = deleteuseradmin;
 exports.login = login;
 exports.readall = readall;
 
