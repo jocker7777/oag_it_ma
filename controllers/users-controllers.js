@@ -90,6 +90,7 @@ const readall = async (req, res) => {
       console.error('Error executing query:', err);
       res.status(500).json({ error: 'Internal server error' });
     } else {
+      console.log("data send success");
       res.status(200).json(results);
     }
   });
