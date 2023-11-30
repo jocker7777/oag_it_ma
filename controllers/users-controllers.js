@@ -152,47 +152,48 @@ const deleteuseradmin = async (req, res, next) => {
   }
 };
 
-
-
 //-------------------------------------------User_Search---------------------------------------------------------//
 const searchuser = async (req, res, next) => {
   try {
-    
     const data = req.body;
     console.log(data);
-    const {
-      FirstName,
-      LastName,
-      UserName,
-      PersonID
-    } = data;
-  
+    const { FirstName, LastName, UserName, PersonID } = data;
 
-    // เช็คว่ามีข้อมูล UserID ที่ต้องการลบหรือไม่
-    const checkUserSql = "SELECT * FROM `oag_user` WHERE `UserID` = ?";
-    const checkUserResult = await db
-      .promise()
-      .query(checkUserSql, [userIdToDelete]);
+    // สร้างคำสั่ง SQL เพื่อค้นหาข้อมูล
+    const searchUserSql =
+    "SELECT * FROM oag_user WHERE FirstName LIKE ? or LastName LIKE ? or Username LIKE ? or PersonID = ?";
 
-    if (checkUserResult[0].length === 0) {
-      // ถ้าไม่มีข้อมูล UserID ที่ต้องการลบ
-      res.status(404).send("User not found");
-      return;
+    // เพิ่มค่าที่ใช้ค้นหาลงในคำสั่ง SQL
+    const searchValues = [
+      `%${req.body.FirstName}%`,
+      `%${req.body.LastName}%`,
+      `%${req.body.UserName}%`,
+        req.body.PersonID,
+    ];
+    console.log(req.body.LastName);
+
+    // เรียกใช้คำสั่ง SQL
+    const [searchUserResult] = await db.promise().query(searchUserSql, searchValues);
+    console.log(searchUserResult);
+
+    // ตรวจสอบจำนวนแถวที่คืนค่า
+   
+    if (searchUserResult.length > 0) {
+      // มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
+      // คืนค่าข้อมูลผู้ใช้ไปยังไคลเอนต์
+      res.json(searchUserResult[0]);
+    } else {
+      // ไม่มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
+      res.status(404).json({ message: "User not found" });
     }
-
-    // ถ้ามีข้อมูล UserID ที่ต้องการลบ
-    //const deleteSql = 'DELETE FROM `oag_user` WHERE `UserID` = ?';
-    // const deleteSql =
-    //   "UPDATE `oag_user` SET `ActiveStatus` = 1 WHERE `UserID` = ?";
-    // const deleteResult = await db.promise().query(deleteSql, [userIdToDelete]);
-
-    console.log("Data deleted from MySQL:", deleteResult);
-    res.status(200).send("Data deleted successfully");
   } catch (error) {
-    console.error("Error deleting data from MySQL: ", error);
-    res.status(500).send("Internal Server Error");
+    console.error(error);
+    // Handle errors appropriately
+    next(error); // Pass the error to the next middleware
   }
 };
+
+
 
 exports.createuseradmin = createuseradmin;
 exports.deleteuseradmin = deleteuseradmin;
