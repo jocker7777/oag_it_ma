@@ -163,7 +163,7 @@ const searchuser = async (req, res, next) => {
     const {
       FirstName,
       LastName,
-      UserName,
+      UserNam5555e,
       PersonID
     } = data;
   
