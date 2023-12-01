@@ -168,43 +168,26 @@ const searchuser = async (req, res, next) => {
     } = data;
   
 
-    // สร้างคำสั่ง SQL เพื่อค้นหาข้อมูล
-    const searchUserSql =
-      "SELECT * FROM oag_user WHERE (FirstName LIKE ? and LastName LIKE ? and Username LIKE ? and PersonID = ?)";
-      //"select *  from oag_user where 1=1 and (nvl(FirstName,0)=0 or FirstName like ?  and (nvl(LastName,0)=0 or LastName like ? and  (nvl(UserName,0)=0 or UserName like ?  and (nvl(PersonID,0)=0 or PersonID = ?";
-    // "    SELECT oag_user.* FROM oag_user WHERE (UserID = ? OR ? = '') AND (FirstName LIKE ? OR ? = '') AND  (LastName LIKE ? OR ? = '') AND (Username LIKE ? OR ? = '') AND (PersonID = ? OR ? = '')";
-
-    // เพิ่มค่าที่ใช้ค้นหาลงในคำสั่ง SQL
-    const searchValues = [
-    //   `%${FirstName || 0}%`,
-    //   `%${LastName || 0}%`,
-    //   `%${UserName || 0}%`,
-    //   PersonID || 0,
-    // ];
-       `%${FirstName}%`,
-      `%${LastName}%`,
-      `%${UserName}%`,
-      PersonID ,
-    ];
-
-    //console.log(req.body.LastName);
-
-    // เรียกใช้คำสั่ง SQL
-    const [searchUserResult] = await db
+    // เช็คว่ามีข้อมูล UserID ที่ต้องการลบหรือไม่
+    const checkUserSql = "SELECT * FROM `oag_user` WHERE `UserID` = ?";
+    const checkUserResult = await db
       .promise()
-      .query(searchUserSql, searchValues);
-    console.log(searchUserResult);
+      .query(checkUserSql, [userIdToDelete]);
 
-    // ตรวจสอบจำนวนแถวที่คืนค่า
-    res.json(searchUserResult[0]);
-    // if (searchUserResult.length > 0) {
-    //   // มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
-    //   // คืนค่าข้อมูลผู้ใช้ไปยังไคลเอนต์
-    //   res.json(searchUserResult[0]);
-    // } else {
-    //   // ไม่มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
-    //   res.status(404).json({ message: "User not found" });
-    // }
+    if (checkUserResult[0].length === 0) {
+      // ถ้าไม่มีข้อมูล UserID ที่ต้องการลบ
+      res.status(404).send("User not found");
+      return;
+    }
+
+    // ถ้ามีข้อมูล UserID ที่ต้องการลบ
+    //const deleteSql = 'DELETE FROM `oag_user` WHERE `UserID` = ?';
+    // const deleteSql =
+    //   "UPDATE `oag_user` SET `ActiveStatus` = 1 WHERE `UserID` = ?";
+    // const deleteResult = await db.promise().query(deleteSql, [userIdToDelete]);
+
+    console.log("Data deleted from MySQL:", deleteResult);
+    res.status(200).send("Data deleted successfully");
   } catch (error) {
     console.error("Error deleting data from MySQL: ", error);
     res.status(500).send("Internal Server Error");
