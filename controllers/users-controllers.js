@@ -152,12 +152,21 @@ const deleteuseradmin = async (req, res, next) => {
   }
 };
 
+
+
 //-------------------------------------------User_Search---------------------------------------------------------//
 const searchuser = async (req, res, next) => {
   try {
+    
     const data = req.body;
     console.log(data);
-    const { FirstName, LastName, UserName, PersonID } = data;
+    const {
+      FirstName,
+      LastName,
+      UserName,
+      PersonID
+    } = data;
+  
 
     // สร้างคำสั่ง SQL เพื่อค้นหาข้อมูล
     const searchUserSql =
@@ -197,9 +206,8 @@ const searchuser = async (req, res, next) => {
     //   res.status(404).json({ message: "User not found" });
     // }
   } catch (error) {
-    console.error(error);
-    // Handle errors appropriately
-    next(error); // Pass the error to the next middleware
+    console.error("Error deleting data from MySQL: ", error);
+    res.status(500).send("Internal Server Error");
   }
 };
 
