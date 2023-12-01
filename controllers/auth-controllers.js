@@ -72,7 +72,7 @@ const passwordCheck = (firstNameEng, personalId, username, password) => {
   return new Promise((resolve, reject) => {
     try {
       //-- check db if password pattern match equation --
-      if (!firstNameEng || !personalId) resolve(false);
+      if ((!username && !firstNameEng) || !personalId) resolve(false);
       let dbPassword = firstNameEng
         ? firstNameEng.substring(0, 3)
         : username.substring(0, 3);
