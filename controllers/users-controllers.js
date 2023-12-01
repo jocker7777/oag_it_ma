@@ -161,39 +161,47 @@ const searchuser = async (req, res, next) => {
 
     // สร้างคำสั่ง SQL เพื่อค้นหาข้อมูล
     const searchUserSql =
-    "SELECT * FROM oag_user WHERE FirstName LIKE ? or LastName LIKE ? or Username LIKE ? or PersonID = ?";
+      "SELECT * FROM oag_user WHERE (FirstName LIKE ? and LastName LIKE ? and Username LIKE ? and PersonID = ?)";
+      //"select *  from oag_user where 1=1 and (nvl(FirstName,0)=0 or FirstName like ?  and (nvl(LastName,0)=0 or LastName like ? and  (nvl(UserName,0)=0 or UserName like ?  and (nvl(PersonID,0)=0 or PersonID = ?";
+    // "    SELECT oag_user.* FROM oag_user WHERE (UserID = ? OR ? = '') AND (FirstName LIKE ? OR ? = '') AND  (LastName LIKE ? OR ? = '') AND (Username LIKE ? OR ? = '') AND (PersonID = ? OR ? = '')";
 
     // เพิ่มค่าที่ใช้ค้นหาลงในคำสั่ง SQL
     const searchValues = [
-      `%${req.body.FirstName}%`,
-      `%${req.body.LastName}%`,
-      `%${req.body.UserName}%`,
-        req.body.PersonID,
+    //   `%${FirstName || 0}%`,
+    //   `%${LastName || 0}%`,
+    //   `%${UserName || 0}%`,
+    //   PersonID || 0,
+    // ];
+       `%${FirstName}%`,
+      `%${LastName}%`,
+      `%${UserName}%`,
+      PersonID ,
     ];
-    console.log(req.body.LastName);
+
+    //console.log(req.body.LastName);
 
     // เรียกใช้คำสั่ง SQL
-    const [searchUserResult] = await db.promise().query(searchUserSql, searchValues);
+    const [searchUserResult] = await db
+      .promise()
+      .query(searchUserSql, searchValues);
     console.log(searchUserResult);
 
     // ตรวจสอบจำนวนแถวที่คืนค่า
-   
-    if (searchUserResult.length > 0) {
-      // มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
-      // คืนค่าข้อมูลผู้ใช้ไปยังไคลเอนต์
-      res.json(searchUserResult[0]);
-    } else {
-      // ไม่มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
-      res.status(404).json({ message: "User not found" });
-    }
+    res.json(searchUserResult[0]);
+    // if (searchUserResult.length > 0) {
+    //   // มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
+    //   // คืนค่าข้อมูลผู้ใช้ไปยังไคลเอนต์
+    //   res.json(searchUserResult[0]);
+    // } else {
+    //   // ไม่มีผู้ใช้ที่ตรงตามเงื่อนไขการค้นหา
+    //   res.status(404).json({ message: "User not found" });
+    // }
   } catch (error) {
     console.error(error);
     // Handle errors appropriately
     next(error); // Pass the error to the next middleware
   }
 };
-
-
 
 exports.createuseradmin = createuseradmin;
 exports.deleteuseradmin = deleteuseradmin;
