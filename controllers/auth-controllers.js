@@ -11,10 +11,10 @@ module.exports.logIn = async (req, res) => {
     });
     const loginData = await userSchema.validate(req.body).catch((e) => {
       //--- Validate if input match schema ---
-      throw { code: 401 };
+      throw { code: 400 };
     });
     //-- End Validate body data--
-
+    //console.table(loginData);
     //-- find user in db and check password --
     const [dataRows] = await findUserData(loginData).catch((e) => {
       throw e;
@@ -45,11 +45,6 @@ module.exports.logIn = async (req, res) => {
     res.status(e.code).end();
     //-- End error handler --
   }
-};
-
-module.exports.testSecureRoute = async (req, res) => {
-  //-- for test secure route that require authentication middleware --
-  res.send(req.body.tokenData);
 };
 
 //-- Query user data from db --
