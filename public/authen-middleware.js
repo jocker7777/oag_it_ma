@@ -44,7 +44,7 @@ module.exports.checkPermission = (allowRoles = []) => {
       jwt.verify(token, keyToSign, function (err, decoded) {
         if (err) return res.status(401).end();
         req.tokenData = decoded;
-        if (allowRoles.length > 0 && allowRoles.indexOf(decoded?.Role) > -1)
+        if (!(allowRoles.length > 0 && allowRoles.indexOf(decoded?.Role) > -1))
           throw 403;
         next();
       });
