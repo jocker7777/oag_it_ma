@@ -72,7 +72,6 @@ const passwordCheck = (firstNameEng, personalId, username, password) => {
         ? firstNameEng.substring(0, 3)
         : username.substring(0, 3);
       //-- End check password pattern equation check --
-
       //-- check if password match --
       dbPassword += `${personalId.substring(personalId.length - 3)}`;
       if (password != dbPassword) resolve(false);
