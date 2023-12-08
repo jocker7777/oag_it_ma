@@ -1,41 +1,51 @@
 const express = require("express");
-const mysql = require("mysql2");
-const bodyParser = require("body-parser");
+const db = require("./connectdb"); // Import the MySQL connection
 const app = express();
-const port = process.env.PORT || 3000;
+const cors = require("cors");
+const bodyParserErrorHandler = require("express-body-parser-error-handler");
+const port = process.env.PORT || 3500;
+global.environment = "dev"; // please change to production on production
+//-- config express data handler and origin --//
+const bodyParser = require("body-parser");
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
-//const usersRoutes = require("./routes/user-routes");
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST",
+  })
+);
+app.use(
+  bodyParserErrorHandler({
+    errorMessage: (err) => {
+      console.error(err);
+      return undefined;
+    },
+    onerror: (err, req, res) => {
+      return res.status(400).end();
+    },
+  })
+);
+//-- config request data type --//
+
+const usersRoutes = require("./routes/user-routes");
 const authRoutes = require("./routes/auth-routes");
-app.use("/auth", authRoutes);
+const ticketRoutes = require("./routes/ticket-routes");
 //const mousRoutes = require("./routes/mou-routes");
 
 // การเชื่อมต่อกับ MySQL
-const db = mysql.createConnection({
-  connectionLimit: 10,
-  host: "172.16.10.151",
-  port: 3306,
-  user: "eticket",
-  password: "p@ssw0rd",
-  database: "eticket",
-  insecureAuth: true,
-});
 
-db.connect((err) => {
-  if (err) {
-    throw err;
-  }
-  global.globalDB = db;
-  console.log("Connected to MySQL");
-});
-
+app.use("/api/users", usersRoutes); //เรียกเส้นทางไป user routes
+app.use("/api/auth", authRoutes); //เรียกเส้นทางไป Auth( login ) routes
+app.use("/api/ticket", ticketRoutes); //เรียกเส้นทางไป ticket routes
 // สร้าง API เพื่อดึงข้อมูล
 app.get("/api/oag_office", (req, res) => {
-  const sql = "SELECT * FROM oag_office LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ
+  const sql = "SELECT * FROM oag_user LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ
   db.query(sql, (err, result) => {
     if (err) throw err;
     res.json(result);
   });
 });
+
 // เริ่มต้นเซิร์ฟเวอร์
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
