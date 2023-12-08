@@ -11,10 +11,10 @@ module.exports.logIn = async (req, res) => {
     });
     const loginData = await userSchema.validate(req.body).catch((e) => {
       //--- Validate if input match schema ---
-      throw { code: 401 };
+      throw { code: 400 };
     });
     //-- End Validate body data--
-
+    //console.table(loginData);
     //-- find user in db and check password --
     const [dataRows] = await findUserData(loginData).catch((e) => {
       throw e;
@@ -47,11 +47,6 @@ module.exports.logIn = async (req, res) => {
   }
 };
 
-module.exports.testSecureRoute = async (req, res) => {
-  //-- for test secure route that require authentication middleware --
-  res.send(req.body.tokenData);
-};
-
 //-- Query user data from db --
 const findUserData = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -77,7 +72,6 @@ const passwordCheck = (firstNameEng, personalId, username, password) => {
         ? firstNameEng.substring(0, 3)
         : username.substring(0, 3);
       //-- End check password pattern equation check --
-
       //-- check if password match --
       dbPassword += `${personalId.substring(personalId.length - 3)}`;
       if (password != dbPassword) resolve(false);
