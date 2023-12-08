@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const ticketController = require("../controllers/ticket-controllers");
 const authen = require("../public/authen-middleware");
-const permission = require("../env/Permisson.json").ticket;
+const permission = require("../public/Permisson.json").ticket;
 
 router.post(
   "/create",
@@ -20,6 +20,12 @@ router.post(
   "/update/status",
   authen.checkPermission(permission.update.data),
   ticketController.updateStatus
+);
+
+router.post(
+  "/list",
+  authen.checkPermission(permission.list),
+  ticketController.list
 );
 
 module.exports = router;

@@ -104,6 +104,7 @@ module.exports.updateStatus = async (req, res) => {
 module.exports.list = async (req, res) => {
   try {
     req.body.UserID = req.tokenData.UserID;
+    req.body.Role = req.tokenData.Role;
     //-- validate update variable --
     const queryData = await yup
       .object({
@@ -138,27 +139,29 @@ module.exports.list = async (req, res) => {
 //-- insert oag_track function --
 const insertTicketData = (data) => {
   return new Promise(async (resolve, reject) => {
-    const dbdata = await globalDB
-      .promise()
-      .query(
-        "insert into oag_track " +
-          "(CreateUserID, InventoryTypeID, Sticker, SerialNo, TrackTopic, TrackDescription," +
-          "ContactDetail, StatusID, ActiveStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)",
-        [
-          data.UserID,
-          data.InventoryTypeID,
-          data.Sticker,
-          data.SerialNo,
-          data.TrackTopic,
-          data.TrackDescription,
-          data.ContactDetail,
-        ]
-      )
-      .catch((e) => {
-        console.error(e);
-        reject({ code: 500 });
-      });
-    resolve(dbdata);
+    try {
+      const dbdata = await globalDB
+        .promise()
+        .query(
+          "insert into oag_track " +
+            "(CreateUserID, InventoryTypeID, Sticker, SerialNo, TrackTopic, TrackDescription," +
+            "ContactDetail, StatusID, ActiveStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)",
+          [
+            data.UserID,
+            data.InventoryTypeID,
+            data.Sticker,
+            data.SerialNo,
+            data.TrackTopic,
+            data.TrackDescription,
+            data.ContactDetail,
+          ]
+        );
+
+      resolve(dbdata);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 //-- end insert function --
@@ -166,26 +169,27 @@ const insertTicketData = (data) => {
 //-- update oag_track function --
 const updateTicketData = (data) => {
   return new Promise(async (resolve, reject) => {
-    const dbdata = await globalDB
-      .promise()
-      .query(
-        "update oag_track set InventoryTypeID = ?, Sticker = ?,SerialNo = ?, TrackTopic = ?," +
-          "TrackDescription = ?, ContactDetail = ? where TrackID = ?",
-        [
-          data.InventoryTypeID,
-          data.Sticker,
-          data.SerialNo,
-          data.TrackTopic,
-          data.TrackDescription,
-          data.ContactDetail,
-          data.TrackID,
-        ]
-      )
-      .catch((e) => {
-        console.error(e);
-        reject({ code: 500 });
-      });
-    resolve(dbdata);
+    try {
+      const dbdata = await globalDB
+        .promise()
+        .query(
+          "update oag_track set InventoryTypeID = ?, Sticker = ?,SerialNo = ?, TrackTopic = ?," +
+            "TrackDescription = ?, ContactDetail = ? where TrackID = ?",
+          [
+            data.InventoryTypeID,
+            data.Sticker,
+            data.SerialNo,
+            data.TrackTopic,
+            data.TrackDescription,
+            data.ContactDetail,
+            data.TrackID,
+          ]
+        );
+      resolve(dbdata);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 //-- end update ticket function --
@@ -193,22 +197,23 @@ const updateTicketData = (data) => {
 //-- update oag_track status function --
 const updateTicketStatus = (data, accept = false) => {
   return new Promise(async (resolve, reject) => {
-    const updateArr = accept
-      ? [data.StatusID, data.UserID, data.TrackID]
-      : [data.StatusID, data.TrackID];
-    const dbdata = await globalDB
-      .promise()
-      .query(
-        accept
-          ? "update oag_track set StatusID = ?, RecipientID = ? where TrackID = ?"
-          : "update oag_track set StatusID = ? where TrackID = ?",
-        updateArr
-      )
-      .catch((e) => {
-        console.error(e);
-        reject({ code: 500 });
-      });
-    resolve(true);
+    try {
+      const updateArr = accept
+        ? [data.StatusID, data.UserID, data.TrackID]
+        : [data.StatusID, data.TrackID];
+      const dbdata = await globalDB
+        .promise()
+        .query(
+          accept
+            ? "update oag_track set StatusID = ?, RecipientID = ? where TrackID = ?"
+            : "update oag_track set StatusID = ? where TrackID = ?",
+          updateArr
+        );
+      resolve(true);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 //-- end update status function --//
@@ -216,44 +221,51 @@ const updateTicketStatus = (data, accept = false) => {
 //-- insert oag_tracklog --
 const insertTrackLog = (data) => {
   return new Promise(async (resolve, reject) => {
-    const dbdata = await globalDB
-      .promise()
-      .query(
-        `insert into oag_trackLog (TrackID, StatusID, UserID, ActiveStatus) VALUES (?, ?, ?, ?)`,
-        [data.TrackID, data.StatusID, data.UserID, 0]
-      )
-      .catch((e) => {
-        //--- save sql command to file ---
-        logToFile(
-          "insertTrackLog",
-          "insert into trackLog (TrackID, StatusID, UserID, ActiveStatus) VALUES " +
-            `(${data.TrackID}, ${data.StatusID}, ${data.UserID}, 0)`
+    try {
+      const dbdata = await globalDB
+        .promise()
+        .query(
+          `insert into oag_trackLog (TrackID, StatusID, UserID, ActiveStatus) VALUES (?, ?, ?, ?)`,
+          [data.TrackID, data.StatusID, data.UserID, 0]
         );
-        //--- end save sql command ---
-        console.error(e);
-        reject({ code: 500 });
-      });
-    resolve(true);
+
+      resolve(true);
+    } catch (e) {
+      //--- save sql command to file ---
+      logToFile(
+        "insertTrackLog",
+        "insert into trackLog (TrackID, StatusID, UserID, ActiveStatus) VALUES " +
+          `(${data.TrackID}, ${data.StatusID}, ${data.UserID}, 0)`
+      );
+      //--- end save sql command ---
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 // -- end insert oag_tracklog
 
 //-- Save Error to log file --
 const logToFile = (fileName, logText) => {
-  log4js.configure({
-    appenders: {
-      [fileName]: {
-        type: "file",
-        filename: `logs/${fileName}.log`,
-        compress: true,
+  try {
+    log4js.configure({
+      appenders: {
+        [fileName]: {
+          type: "file",
+          filename: `logs/${fileName}.log`,
+          compress: true,
+        },
       },
-    },
-    categories: {
-      default: { appenders: [fileName], level: "error" },
-    },
-  });
-  const logger = log4js.getLogger(fileName);
-  logger.error(logText);
+      categories: {
+        default: { appenders: [fileName], level: "error" },
+      },
+    });
+    const logger = log4js.getLogger(fileName);
+    logger.error(logText);
+  } catch (e) {
+    console.error(e);
+    reject({ code: 500 });
+  }
 };
 //-- End Save Error to log file
 
@@ -276,24 +288,26 @@ const ticketSchema = (update = false) => {
 //-- find ticket list --
 const findTicketList = (data) => {
   return new Promise(async (resolve, reject) => {
-    const [rows, fields] = await globalDB
-      .promise()
-      .query(
-        "select select TrackID, InventoryTypeID, TrackTopic, TrackDescruotion, ContactDetail, " +
-          "StatusID, StatusName, CreateDate, " +
-          "CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
-          "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
-          "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
-          "left join oag_user creater on ot.CreateUserID = creater.UserID " +
-          "left join oag_user accepter on ot.RecipientUserID = accepter.UserID where " +
-          (data.Role = 3 ? "creater.UserID = ?" : "accepter.UserID = ?"),
-        [data.UserID]
-      )
-      .catch((e) => {
-        console.error(e);
-        reject({ code: 500 });
-      });
-    resolve(rows);
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, " +
+            "StatusID, StatusName, CreateDate, " +
+            "CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+            "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+            "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+            "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+            "left join oag_user accepter on ot.RecipientUserID = accepter.UserID where " +
+            (data.Role = 3 ? "creater.UserID = ?" : "accepter.UserID = ?"),
+          [data.UserID]
+        );
+
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 //-- end find ticket list --

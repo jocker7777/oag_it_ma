@@ -36,7 +36,7 @@ const ticketRoutes = require("./routes/ticket-routes");
 
 app.use("/api/users", usersRoutes); //เรียกเส้นทางไป user routes
 app.use("/api/auth", authRoutes); //เรียกเส้นทางไป Auth( login ) routes
-app.use("/api/ticket", ticketRoutes); //เรียกเส้นทางไป Auth( login ) routes
+app.use("/api/ticket", ticketRoutes); //เรียกเส้นทางไป ticket routes
 // สร้าง API เพื่อดึงข้อมูล
 app.get("/api/oag_office", (req, res) => {
   const sql = "SELECT * FROM oag_user LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ
