@@ -101,8 +101,41 @@ module.exports.updateStatus = async (req, res) => {
   }
 };
 
+module.exports.list = async (req, res) => {
+  try {
+    req.body.UserID = req.tokenData.UserID;
+    //-- validate update variable --
+    const queryData = await yup
+      .object({
+        UserID: yup.number().required(),
+        Role: yup.number().required(),
+      })
+      .validate(req.body)
+      .catch((e) => {
+        console.log(e);
+        throw { code: 400 };
+      });
+    //-- end validate update variable --
+    //-- find list data --//
+    const list = await findTicketList(queryData).catch((e) => {
+      throw e;
+    });
+    //-- find list data --//
+    res.json(list);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    console.error(e);
+    if (!e.code) {
+      return res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+
 //----------------------------------------------------------------------
 
+//-- insert oag_track function --
 const insertTicketData = (data) => {
   return new Promise(async (resolve, reject) => {
     const dbdata = await globalDB
@@ -128,7 +161,9 @@ const insertTicketData = (data) => {
     resolve(dbdata);
   });
 };
+//-- end insert function --
 
+//-- update oag_track function --
 const updateTicketData = (data) => {
   return new Promise(async (resolve, reject) => {
     const dbdata = await globalDB
@@ -153,7 +188,9 @@ const updateTicketData = (data) => {
     resolve(dbdata);
   });
 };
+//-- end update ticket function --
 
+//-- update oag_track status function --
 const updateTicketStatus = (data, accept = false) => {
   return new Promise(async (resolve, reject) => {
     const updateArr = accept
@@ -174,7 +211,9 @@ const updateTicketStatus = (data, accept = false) => {
     resolve(true);
   });
 };
+//-- end update status function --//
 
+//-- insert oag_tracklog --
 const insertTrackLog = (data) => {
   return new Promise(async (resolve, reject) => {
     const dbdata = await globalDB
@@ -197,6 +236,7 @@ const insertTrackLog = (data) => {
     resolve(true);
   });
 };
+// -- end insert oag_tracklog
 
 //-- Save Error to log file --
 const logToFile = (fileName, logText) => {
@@ -231,4 +271,29 @@ const ticketSchema = (update = false) => {
     ContactDetail: yup.string().required(),
   });
 };
-//
+//-- end check variable --
+
+//-- find ticket list --
+const findTicketList = (data) => {
+  return new Promise(async (resolve, reject) => {
+    const [rows, fields] = await globalDB
+      .promise()
+      .query(
+        "select select TrackID, InventoryTypeID, TrackTopic, TrackDescruotion, ContactDetail, " +
+          "StatusID, StatusName, CreateDate, " +
+          "CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+          "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+          "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+          "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+          "left join oag_user accepter on ot.RecipientUserID = accepter.UserID where " +
+          (data.Role = 3 ? "creater.UserID = ?" : "accepter.UserID = ?"),
+        [data.UserID]
+      )
+      .catch((e) => {
+        console.error(e);
+        reject({ code: 500 });
+      });
+    resolve(rows);
+  });
+};
+//-- end find ticket list --
