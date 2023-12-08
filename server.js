@@ -4,6 +4,7 @@ const app = express();
 const cors = require("cors");
 const bodyParserErrorHandler = require("express-body-parser-error-handler");
 const port = process.env.PORT || 3500;
+global.environment = "dev"; // please change to production on production
 //-- config express data handler and origin --//
 const bodyParser = require("body-parser");
 app.use(bodyParser.json({ limit: "30mb", extended: true }));

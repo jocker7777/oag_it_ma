@@ -1,7 +1,13 @@
 const jwt = require("jsonwebtoken");
-//--- Key use to sign and validate token (should be in env file or folder)---
+const fs = require("fs");
 const keyToSign =
-  "kalfskgpowi501291502103i01j2iorjafo9w8u719247urqwujfanlzckvdhgiur93q";
+  global.environment == "dev"
+    ? "kalfskgpowi501291502103i01j2iorjafo9w8u719247urqwujfanlzckvdhgiur93q"
+    : fs.readFileSync("./env/key_rsa");
+
+//--- Key use to sign and validate token (should be in env file or folder)---
+// const keyToSign =
+//   "kalfskgpowi501291502103i01j2iorjafo9w8u719247urqwujfanlzckvdhgiur93q";
 
 //-- Sign token key --
 module.exports.signToken = (data, expireRange = "365d") => {
