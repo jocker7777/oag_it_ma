@@ -9,7 +9,6 @@ module.exports.create = async (req, res) => {
     const createData = await ticketSchema()
       .validate(req.body)
       .catch((e) => {
-        console.log(e);
         throw { code: 400 };
       });
     //-- end validate insert variable --
@@ -27,8 +26,8 @@ module.exports.create = async (req, res) => {
     res.status(200).end();
   } catch (e) {
     //-- if any error occur return server error status --
-    console.error(e);
     if (!e.code) {
+      console.error(e);
       return res.status(500).end();
     }
     res.status(e.code).end();
@@ -42,7 +41,6 @@ module.exports.updateData = async (req, res) => {
     const updateData = await ticketSchema(true)
       .validate(req.body)
       .catch((e) => {
-        console.log(e);
         throw { code: 400 };
       });
     //-- end validate update variable --
@@ -54,8 +52,8 @@ module.exports.updateData = async (req, res) => {
     res.status(200).end();
   } catch (e) {
     //-- if any error occur return server error status --
-    console.error(e);
     if (!e.code) {
+      console.error(e);
       return res.status(500).end();
     }
     res.status(e.code).end();
@@ -75,7 +73,6 @@ module.exports.updateStatus = async (req, res) => {
       })
       .validate(req.body)
       .catch((e) => {
-        console.log(e);
         throw { code: 400 };
       });
     //-- end validate update variable --
@@ -92,8 +89,8 @@ module.exports.updateStatus = async (req, res) => {
     res.status(200).end();
   } catch (e) {
     //-- if any error occur return server error status --
-    console.error(e);
     if (!e.code) {
+      console.error(e);
       return res.status(500).end();
     }
     res.status(e.code).end();
@@ -113,7 +110,6 @@ module.exports.list = async (req, res) => {
       })
       .validate(req.body)
       .catch((e) => {
-        console.log(e);
         throw { code: 400 };
       });
     //-- end validate update variable --
@@ -125,8 +121,27 @@ module.exports.list = async (req, res) => {
     res.json(list);
   } catch (e) {
     //-- if any error occur return server error status --
-    console.error(e);
     if (!e.code) {
+      console.error(e);
+      return res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+
+module.exports.inventoryType = async (req, res) => {
+  try {
+    //-- find list data --//
+    const list = await findInventoryType().catch((e) => {
+      throw e;
+    });
+    //-- find list data --//
+    res.json(list);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
       return res.status(500).end();
     }
     res.status(e.code).end();
@@ -302,6 +317,23 @@ const findTicketList = (data) => {
             (data.Role = 3 ? "creater.UserID = ?" : "accepter.UserID = ?"),
           [data.UserID]
         );
+
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find ticket list --
+
+//-- find ticket list --
+const findInventoryType = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query("select * from oag_inventory_type");
 
       resolve(rows);
     } catch (e) {
