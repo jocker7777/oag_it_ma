@@ -4,5 +4,8 @@
     "update": { "data": [1, 2], "status": [1, 2] },
     "delete": [1],
     "list": [1, 2, 3]
+  },
+  "report": {
+    "log": { "access": [1, 2, 3] }
   }
 }

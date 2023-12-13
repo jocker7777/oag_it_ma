@@ -28,4 +28,6 @@ router.post(
   ticketController.list
 );
 
+router.post("/inventorytype", ticketController.inventoryType);
+
 module.exports = router;

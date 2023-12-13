@@ -64,3 +64,12 @@ module.exports.checkPermission = (allowRoles = []) => {
   };
 };
 //-- End permission check --
+
+module.exports.LogTokenDecode = (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, keyToSign, function (err, decoded) {
+      if (err) resolve(false);
+      resolve(decoded.UserID ?? null);
+    });
+  });
+};
