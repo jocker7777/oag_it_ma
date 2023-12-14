@@ -34,7 +34,7 @@ module.exports.accessLog = async (req, res) => {
   }
 };
 
-//-- find v --
+//-- find accesslogs --
 const findAccessLogList = (data) => {
   return new Promise(async (resolve, reject) => {
     const [rows, fields] = await globalDB
