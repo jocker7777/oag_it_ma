@@ -334,7 +334,9 @@ const findInventoryType = (data) => {
     try {
       const [rows, fields] = await globalDB
         .promise()
-        .query("select * from oag_inventory_type where ActiveStatus = 0");
+        .query(
+          "select InventoryTypeID, InventoryTypeName from oag_inventory_type where ActiveStatus = 0"
+        );
 
       resolve(rows);
     } catch (e) {
