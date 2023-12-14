@@ -52,7 +52,9 @@ const findUserData = (data) => {
   return new Promise(async (resolve, reject) => {
     const dbdata = await globalDB
       .promise()
-      .query(`select * from oag_user where Username = ?`, [data.username])
+      .query(`select * from oag_user where ActiveStatus = 0 and Username = ?`, [
+        data.username,
+      ])
       .catch((e) => {
         console.error(e);
         reject({ code: 500 });

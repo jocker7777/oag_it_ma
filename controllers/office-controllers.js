@@ -72,7 +72,8 @@ const findSectionList = (data) => {
     const [rows, fields] = await globalDB
       .promise()
       .query(
-        "select OfficeID, OfficeName, OfficeNameCode from oag_office where OfficeTypeID = ? " +
+        "select OfficeID, OfficeName, OfficeNameCode from oag_office " +
+          "where ActiveStatus = 0 and OfficeTypeID = ? " +
           (!data.ProvinceID
             ? ""
             : data.ProvinceID === 1
@@ -93,7 +94,9 @@ const findOfficeList = (data) => {
       .promise()
       .query(
         "select OfficeID, OfficeName, OfficeNameCode from oag_office" +
-          (data.OfficeID ? " where OfficeIDLevel2 = ?" : ""),
+          (data.OfficeID
+            ? " where ActiveStatus = 0 and OfficeIDLevel2 = ?"
+            : ""),
         [data.OfficeID]
       );
 

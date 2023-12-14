@@ -188,7 +188,7 @@ const updateTicketData = (data) => {
       const dbdata = await globalDB
         .promise()
         .query(
-          "update oag_track set InventoryTypeID = ?, Sticker = ?,SerialNo = ?, TrackTopic = ?," +
+          "update oag_track set InventoryTypeID = ?, Sticker = ?, SerialNo = ?, TrackTopic = ?," +
             "TrackDescription = ?, ContactDetail = ? where TrackID = ?",
           [
             data.InventoryTypeID,
@@ -220,7 +220,7 @@ const updateTicketStatus = (data, accept = false) => {
         .promise()
         .query(
           accept
-            ? "update oag_track set StatusID = ?, RecipientID = ? where TrackID = ?"
+            ? "update oag_track set StatusID = ?, RecipientUserID = ? where TrackID = ?"
             : "update oag_track set StatusID = ? where TrackID = ?",
           updateArr
         );
@@ -240,7 +240,7 @@ const insertTrackLog = (data) => {
       const dbdata = await globalDB
         .promise()
         .query(
-          `insert into oag_trackLog (TrackID, StatusID, UserID, ActiveStatus) VALUES (?, ?, ?, ?)`,
+          `insert into oag_tracklog (TrackID, StatusID, UserID, ActiveStatus) VALUES (?, ?, ?, ?)`,
           [data.TrackID, data.StatusID, data.UserID, 0]
         );
 
@@ -307,13 +307,14 @@ const findTicketList = (data) => {
       const [rows, fields] = await globalDB
         .promise()
         .query(
-          "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, " +
-            "StatusID, StatusName, CreateDate, " +
-            "CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+          "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
+            " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+            "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
             "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
             "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
             "left join oag_user creater on ot.CreateUserID = creater.UserID " +
-            "left join oag_user accepter on ot.RecipientUserID = accepter.UserID where " +
+            "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
+            "where ot.ActiveStatus=0 and " +
             (data.Role = 3 ? "creater.UserID = ?" : "accepter.UserID = ?"),
           [data.UserID]
         );
@@ -333,7 +334,9 @@ const findInventoryType = (data) => {
     try {
       const [rows, fields] = await globalDB
         .promise()
-        .query("select * from oag_inventory_type");
+        .query(
+          "select InventoryTypeID, InventoryTypeName from oag_inventory_type where ActiveStatus = 0"
+        );
 
       resolve(rows);
     } catch (e) {
