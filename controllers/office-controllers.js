@@ -10,11 +10,7 @@ module.exports.area = async (req, res) => {
     ]);
   } catch (e) {
     //-- if any error occur return server error status --
-    if (!e.code) {
-      console.error(e);
-      return res.status(500).end();
-    }
-    res.status(e.code).end();
+    res.status(500).end();
     //-- End error handler --
   }
 };

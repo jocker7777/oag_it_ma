@@ -288,7 +288,7 @@ const logToFile = (fileName, logText) => {
 const ticketSchema = (update = false) => {
   return yup.object({
     //--- Schema validation setting ---
-    UserID: update ? null : yup.number().required(),
+    UserID: update ? null : yup.number().nullable(true),
     TrackID: update ? yup.number().required() : null,
     InventoryTypeID: yup.number().required(),
     Sticker: yup.string().ensure(null).nullable(),

@@ -45,7 +45,6 @@ module.exports.checkPermission = (allowRoles = []) => {
       //const token = req.headers.authorization.split(" ")[1]; //for use with correct auth later
       const token = req.body.token;
       //-- End check token header exist --
-
       //-- Verify if token valid and push data to req.body.tokenData --
       jwt.verify(token, keyToSign, function (err, decoded) {
         if (err) return res.status(401).end();

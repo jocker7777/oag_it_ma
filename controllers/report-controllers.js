@@ -27,7 +27,7 @@ module.exports.accessLog = async (req, res) => {
     //-- if any error occur return server error status --
     if (!e.code) {
       console.error(e);
-      return res.status(500).end();
+      res.status(500).end();
     }
     res.status(e.code).end();
     //-- End error handler --

@@ -1,7 +1,7 @@
 const yup = require("yup");
 const authen = require("../public/authen-middleware");
 
-module.exports.logIn = async (req, res) => {
+const logIn = async (req, res) => {
   try {
     //--Validate body data--
     const userSchema = yup.object({
@@ -14,12 +14,12 @@ module.exports.logIn = async (req, res) => {
       throw { code: 400 };
     });
     //-- End Validate body data--
-    //console.table(loginData);
     //-- find user in db and check password --
     const [dataRows] = await findUserData(loginData).catch((e) => {
       throw e;
     });
-    if (!dataRows[0]?.UserID && dataRows[0]?.ActiveStatus !== 0)
+
+    if (!dataRows[0]?.UserID || dataRows[0]?.ActiveStatus !== 0)
       throw { code: 401 };
     delete dataRows[0].password;
     delete dataRows[0].ResetPasswordStatus;
@@ -29,7 +29,9 @@ module.exports.logIn = async (req, res) => {
       dataRows[0].PersonID,
       dataRows[0].Username,
       loginData.password
-    );
+    ).catch((e) => {
+      return false;
+    });
     if (!passwordMatch) throw { code: 401 };
     //-- End find user r in db and check password --
 
@@ -40,7 +42,7 @@ module.exports.logIn = async (req, res) => {
   } catch (e) {
     //-- if any error occur return server error status --
     if (!e.code) {
-      return res.status(500).end();
+      res.status(500).end();
     }
     res.status(e.code).end();
     //-- End error handler --
@@ -87,3 +89,5 @@ const passwordCheck = (firstNameEng, personalId, username, password) => {
   });
 };
 //-- End password check --
+
+module.exports = { logIn };
