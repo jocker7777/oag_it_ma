@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "jest && node server",
-    "dev": "nodemon server",
+    "dev": "jest && nodemon server",
     "test": "jest"
   },
   "keywords": [],

@@ -285,3 +285,46 @@ describe("ticket inventoryType", () => {
     expect(mockRes.json).toHaveBeenCalledWith([]);
   });
 });
+
+describe("ticket status option", () => {
+  it("db error should res 500", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockRejectedValue("Rejected");
+    await ticket.trackStatus(
+      {
+        body: {},
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("unexpected error should res 500", async () => {
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      end: jest.fn(),
+    };
+    globalDB.query.mockResolvedValue([[], []]);
+    await ticket.trackStatus(
+      {
+        body: {},
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("status option happy flow", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await ticket.trackStatus(
+      {
+        body: {},
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+  });
+});
