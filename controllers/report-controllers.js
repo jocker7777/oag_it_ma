@@ -48,6 +48,23 @@ module.exports.reportSearch = async (req, res) => {
 };
 //-- End search for track recode from oag_track --
 
+//-- Track Status --
+module.exports.trackStatus = async (req, res) => {
+  try {
+    const statusList = await findTrackStatus();
+    res.json(statusList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Track Status --
+
 //query data form oag_tracklog, oag_user, oag_status, oag_inventory_type
 const findTrackList = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -157,3 +174,22 @@ const thaiDateToEng = (date, end = false, nullAble = false) => {
   }
 };
 //end format date dd/mm/YYYY BE to YYYY/mm/dd CE
+
+//-- find accesslogs --
+const findTrackStatus = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select StatusId, StatusName, StatusDescription from oag_trackstatus where " +
+            "ActiveStatus = 0"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find accesslog --

@@ -7,6 +7,7 @@
   },
   "report": {
     "log": { "access": [1, 2, 3] },
-    "search": [1, 2]
+    "search": [1, 2],
+    "option": { "status": [1, 2, 3] }
   }
 }
