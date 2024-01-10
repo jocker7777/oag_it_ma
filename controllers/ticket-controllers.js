@@ -149,6 +149,23 @@ module.exports.inventoryType = async (req, res) => {
   }
 };
 
+//-- Track Status --
+module.exports.trackStatus = async (req, res) => {
+  try {
+    const statusList = await findTrackStatus();
+    res.json(statusList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Track Status --
+
 //----------------------------------------------------------------------
 
 //-- insert oag_track function --
@@ -346,3 +363,22 @@ const findInventoryType = (data) => {
   });
 };
 //-- end find ticket list --
+
+//-- find trackstatus --
+const findTrackStatus = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select StatusId, StatusName, StatusDescription from oag_trackstatus where " +
+            "ActiveStatus = 0"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find trackstatus --

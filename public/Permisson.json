@@ -3,11 +3,11 @@
     "create": [1, 2, 3],
     "update": { "data": [1, 2], "status": [1, 2] },
     "delete": [1],
-    "list": [1, 2, 3]
+    "list": [1, 2, 3],
+    "option": { "status": [1, 2, 3] }
   },
   "report": {
     "log": { "access": [1, 2, 3] },
-    "search": [1, 2],
-    "option": { "status": [1, 2, 3] }
+    "search": [1, 2]
   }
 }
