@@ -6,6 +6,7 @@
     "list": [1, 2, 3]
   },
   "report": {
-    "log": { "access": [1, 2, 3] }
+    "log": { "access": [1, 2, 3] },
+    "search": [1, 2]
   }
 }

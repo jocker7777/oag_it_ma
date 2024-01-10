@@ -41,6 +41,23 @@ describe("access log", () => {
     expect(mockRes.status).toHaveBeenCalledWith(500);
   });
 
+  it("database error should res 500", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      end: jest.fn(),
+    };
+    globalDB.query.mockRejectedValue("error");
+    await report.accessLog(
+      {
+        body: { StartDate: "01/01/2567", EndDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
   it("invalid date should res 400", async () => {
     const mockRes = mockResponse();
     await report.accessLog(
@@ -66,49 +83,214 @@ describe("access log", () => {
     );
     expect(mockRes.json).toHaveBeenCalledWith([]);
   });
+});
 
-  //   it("db error should res 500", async () => {
-  //     const mockRes = mockResponse();
-  //     globalDB.query.mockRejectedValue("Rejected");
-  //     await ticket.create(
-  //       {
-  //         body: {
-  //           UserID: null,
-  //           TrackID: null,
-  //           InventoryTypeID: 1,
-  //           Sticker: null,
-  //           SerialNo: null,
-  //           TrackTopic: "hello",
-  //           TrackDescription: null,
-  //           ContactDetail: "00000000000",
-  //         },
-  //         tokenData: { UserID: 888 },
-  //       },
-  //       mockRes
-  //     );
+describe("Report Search", () => {
+  it("invalid date should res 400", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      end: jest.fn(),
+    };
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StartDate: "xx/xx/2567", EndDate: "01/01/2567" },
+        tokenData: { UserID: 888 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(400);
+  });
 
-  //     expect(mockRes.status).toHaveBeenCalledWith(500);
-  //   });
-  //   it("ticket create happy flow", async () => {
-  //     const mockRes = mockResponse();
-  //     globalDB.query.mockResolvedValue([{ InsertedId: 999 }]);
-  //     await ticket.create(
-  //       {
-  //         body: {
-  //           UserID: null,
-  //           TrackID: null,
-  //           InventoryTypeID: 1,
-  //           Sticker: null,
-  //           SerialNo: null,
-  //           TrackTopic: "hello",
-  //           TrackDescription: null,
-  //           ContactDetail: "00000000000",
-  //         },
-  //         tokenData: { UserID: 888 },
-  //       },
-  //       mockRes
-  //     );
+  it("unexpect error should res 500", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      end: jest.fn(),
+    };
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567", EndDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
 
-  //     expect(mockRes.status).toHaveBeenCalledWith(200);
-  //   });
+  it("database error should res 500", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      end: jest.fn(),
+    };
+    globalDB.query.mockRejectedValue("error");
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567", EndDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("report search only start date should success", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    jest.clearAllMocks();
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+  });
+
+  it("report search only StartDate or EndDate should success", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    jest.clearAllMocks();
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    jest.clearAllMocks();
+    await report.reportSearch(
+      {
+        body: { EndDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    jest.clearAllMocks();
+    await report.reportSearch(
+      {
+        body: { EndDate: "01/01/2567" },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+  });
+
+  it("report search only StaffSearchWord should success", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StaffSearchWord: "ทดสอบ" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+  });
+
+  it("report search only StaffSearchWord should success", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StaffSearchWord: "ทดสอบ" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    jest.clearAllMocks();
+    await report.reportSearch(
+      {
+        body: { StaffSearchWord: "%ชื่อ นามสกุล;" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+  });
+
+  it("report search only UserSearchWord should success", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { UserSearchWord: "ทดสอบ" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    jest.clearAllMocks();
+    await report.reportSearch(
+      {
+        body: { UserSearchWord: "%ชื่อ นามสกุล;" },
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+  });
+
+  it("report search happy flow", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StartDate: "01/01/2567", EndDate: "31/12/2567" },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    expect(mockRes.status).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.reportSearch(
+      {
+        body: { StaffSearchWord: "ทดสอบ", UserSearchWord: "ผู้ใช้งาน ครับ" },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+    expect(mockRes.status).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+    globalDB.query.mockResolvedValue([[], []]);
+    await report.accessLog(
+      {
+        body: {
+          StartDate: "01/01/2566",
+          EndDate: null,
+          StaffSearchWord: "ทดสอบ",
+          UserSearchWord: "ผู้ใช้งาน ครับ",
+        },
+        tokenData: { UserID: 888, Role: 2 },
+      },
+      mockRes
+    );
+  });
 });
