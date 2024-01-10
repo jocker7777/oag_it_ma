@@ -56,9 +56,11 @@ const findTrackList = (data) => {
       const [rows, fields] = await globalDB
         .promise()
         .query(
-          "select ot.TrackID, ot.TrackTopic, ou1.UserID, ou1.FirstName, ou1.LastName, ot.InventoryTypeID, " +
-            "oit.InventoryTypeName ,ot.TrackDescription, ot.SerialNO, ot.Sticker, ot.StatusID, " +
-            "ots.StatusName,CONCAT(ou2.FirstName,' ',ou2.LastName) as RecipientName from oag_track as ot " +
+          "select ot.TrackID, ot.TrackTopic, ou1.UserID, ou1.FirstName, ou1.LastName, " +
+            "ot.InventoryTypeID, oit.InventoryTypeName , " +
+            "CONCAT(DATE_FORMAT(ot.CreateDate, '%d/%m'),'/',YEAR(ot.CreateDate)+543) as createDate, " +
+            "ot.TrackDescription, ot.SerialNO, ot.Sticker, ot.StatusID, ots.StatusName, " +
+            "CONCAT(ou2.FirstName,' ',ou2.LastName) as RecipientName from oag_track as ot " +
             "left join oag_user as ou1 on ot.CreateUserID = ou1.UserID left join oag_user as ou2 on " +
             "ot.RecipientUserID = ou2.UserID left join oag_trackstatus as ots on ot.StatusID " +
             "= ots.StatusID left join oag_inventory_type as oit on ot.InventoryTypeID = " +
