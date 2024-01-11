@@ -185,7 +185,7 @@ describe("update status", () => {
 
   it("ticket updateData happy flow", async () => {
     const mockRes = mockResponse();
-    globalDB.query.mockResolvedValue({ affectedRows: 1 });
+    globalDB.query.mockResolvedValue([{ affectedRows: 1 }]);
     await ticket.updateStatus(
       {
         body: {

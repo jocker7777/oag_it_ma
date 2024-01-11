@@ -239,6 +239,8 @@ const updateTicketStatus = (data, accept = false) => {
         .query(
           accept
             ? "update oag_track set StatusID = ?, RecipientUserID = ? where TrackID = ? and StatusID = 1"
+            : data.StatusID === 1
+            ? "update oag_track set StatusID = ?, RecipientUserID = NULL  where TrackID = ?"
             : "update oag_track set StatusID = ? where TrackID = ?",
           updateArr
         );
