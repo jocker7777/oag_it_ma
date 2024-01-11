@@ -65,20 +65,25 @@ module.exports.office = async (req, res) => {
 //-- find section in oag_office (OfficeTypeID = 2) --
 const findSectionList = (data) => {
   return new Promise(async (resolve, reject) => {
-    const [rows, fields] = await globalDB
-      .promise()
-      .query(
-        "select OfficeID, OfficeName, OfficeNameCode from oag_office " +
-          "where ActiveStatus = 0 and OfficeTypeID = ? " +
-          (!data.ProvinceID
-            ? ""
-            : data.ProvinceID === 1
-            ? "and ProvinceID = ?"
-            : "and ProvinceID <> 1"),
-        [2, data.ProvinceID]
-      );
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select OfficeID, OfficeName, OfficeNameCode from oag_office " +
+            "where ActiveStatus = 0 and OfficeTypeID = ? " +
+            (!data.ProvinceID
+              ? ""
+              : data.ProvinceID === 1
+              ? "and ProvinceID = ?"
+              : "and ProvinceID <> 1"),
+          [2, data.ProvinceID]
+        );
 
-    resolve(rows);
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 //-- end find section --
@@ -86,17 +91,22 @@ const findSectionList = (data) => {
 //-- find office in oag_office (OfficeIDLevel2  = officeID) --
 const findOfficeList = (data) => {
   return new Promise(async (resolve, reject) => {
-    const [rows, fields] = await globalDB
-      .promise()
-      .query(
-        "select OfficeID, OfficeName, OfficeNameCode from oag_office" +
-          (data.OfficeID
-            ? " where ActiveStatus = 0 and OfficeIDLevel2 = ?"
-            : ""),
-        [data.OfficeID]
-      );
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select OfficeID, OfficeName, OfficeNameCode from oag_office" +
+            (data.OfficeID
+              ? " where ActiveStatus = 0 and OfficeIDLevel2 = ?"
+              : ""),
+          [data.OfficeID]
+        );
 
-    resolve(rows);
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
   });
 };
 //-- end find office --

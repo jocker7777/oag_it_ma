@@ -109,6 +109,14 @@ describe("Section", () => {
     expect(mockRes.status).toHaveBeenCalledWith(500);
   });
 
+  it("Section db error should res 500 ", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = mockResponse();
+    globalDB.query.mockRejectedValue("error");
+    await office.section({}, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
   it("Section happy flow", async () => {
     const mockRes = mockResponse();
     globalDB.query.mockResolvedValue([
@@ -191,6 +199,14 @@ describe("Office", () => {
       json: undefined,
       end: jest.fn(),
     };
+    await office.office({}, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("Office db error should res 500 ", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = mockResponse();
+    globalDB.query.mockRejectedValue("error");
     await office.office({}, mockRes);
     expect(mockRes.status).toHaveBeenCalledWith(500);
   });

@@ -308,8 +308,8 @@ const ticketSchema = (update = false) => {
     UserID: update ? null : yup.number().nullable(true),
     TrackID: update ? yup.number().required() : null,
     InventoryTypeID: yup.number().required(),
-    Sticker: yup.string().ensure(null).nullable(),
-    SerialNo: yup.string().ensure(null).nullable(),
+    Sticker: yup.string().nullable(),
+    SerialNo: yup.string().nullable(),
     TrackTopic: yup.string().required(),
     TrackDescription: yup.string().ensure().nullable(),
     ContactDetail: yup.string().required(),
@@ -332,7 +332,9 @@ const findTicketList = (data) => {
             "left join oag_user creater on ot.CreateUserID = creater.UserID " +
             "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
             "where ot.ActiveStatus=0 and " +
-            (data.Role = 3 ? "creater.UserID = ?" : "accepter.UserID = ?"),
+            (data.Role === 3
+              ? "ot.CreateUserID = ?"
+              : "(ot.RecipientUserID = ? or ot.RecipientUserID IS NULL )"),
           [data.UserID]
         );
 
