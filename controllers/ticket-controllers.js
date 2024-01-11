@@ -77,11 +77,12 @@ module.exports.updateStatus = async (req, res) => {
       });
     //-- end validate update variable --
     //-- update oag_track data --//
-    await updateTicketStatus(updateData, (StatusID = 2 ? true : false)).catch(
-      (e) => {
-        throw e;
-      }
-    );
+    await updateTicketStatus(
+      updateData,
+      updateData.StatusID == 2 ? true : false
+    ).catch((e) => {
+      throw e;
+    });
     await insertTrackLog(updateData).catch((e) => {
       throw e;
     });
@@ -233,14 +234,19 @@ const updateTicketStatus = (data, accept = false) => {
       const updateArr = accept
         ? [data.StatusID, data.UserID, data.TrackID]
         : [data.StatusID, data.TrackID];
-      const dbdata = await globalDB
+      const [dbdata] = await globalDB
         .promise()
         .query(
           accept
-            ? "update oag_track set StatusID = ?, RecipientUserID = ? where TrackID = ?"
+            ? "update oag_track set StatusID = ?, RecipientUserID = ? where TrackID = ? and StatusID = 1"
             : "update oag_track set StatusID = ? where TrackID = ?",
           updateArr
         );
+      if (accept) {
+        if (dbdata?.affectedRows == 0) {
+          reject({ code: 409 });
+        }
+      }
       resolve(true);
     } catch (e) {
       console.error(e);
