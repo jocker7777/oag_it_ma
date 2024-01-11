@@ -39,6 +39,7 @@ const authRoutes = require("./routes/auth-routes");
 const ticketRoutes = require("./routes/ticket-routes");
 const officeRoutes = require("./routes/office-routes");
 const reportRoutes = require("./routes/report-routes");
+const userTestRoutes = require("./routes/user-test-routes");
 //const mousRoutes = require("./routes/mou-routes");
 
 // การเชื่อมต่อกับ MySQL
@@ -48,6 +49,7 @@ app.use("/api/auth", authRoutes); //เรียกเส้นทางไป A
 app.use("/api/ticket", ticketRoutes); //เรียกเส้นทางไป ticket routes
 app.use("/api/office", officeRoutes); //เรียกเส้นทางไป office routes
 app.use("/api/report", reportRoutes);
+app.use("/api/usertest", userTestRoutes);
 // สร้าง API เพื่อดึงข้อมูล
 app.get("/api/oag_office", (req, res) => {
   const sql = "SELECT * FROM oag_user LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ

@@ -9,5 +9,8 @@
   "report": {
     "log": { "access": [1, 2, 3] },
     "search": [1, 2]
+  },
+  "user": {
+    "update": [1, 2, 3]
   }
 }
