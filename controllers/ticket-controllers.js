@@ -329,22 +329,19 @@ const ticketSchema = (update = false) => {
 const findTicketList = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const [rows, fields] = await globalDB
-        .promise()
-        .query(
-          "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
-            " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
-            "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
-            "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
-            "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
-            "left join oag_user creater on ot.CreateUserID = creater.UserID " +
-            "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
-            "where ot.ActiveStatus=0 and " +
-            (data.Role === 3
-              ? "ot.CreateUserID = ?"
-              : "(ot.RecipientUserID = ? or ot.RecipientUserID IS NULL )"),
-          [data.UserID]
-        );
+      const [rows, fields] = await globalDB.promise().query(
+        "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
+          " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+          "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+          "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+          "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+          "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+          "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
+          "where ot.ActiveStatus=0 and " +
+          (data.Role === 3 ? "ot.CreateUserID = ?" : "ot.StatusID = 1"),
+        //: "(ot.RecipientUserID = ? or ot.RecipientUserID IS NULL )"),
+        [data.UserID]
+      );
 
       resolve(rows);
     } catch (e) {
