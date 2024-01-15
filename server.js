@@ -9,11 +9,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const usersRoutes = require("./routes/user-routes");
+const reportRoutes = require("./routes/report-routes");
 //const mousRoutes = require("./routes/mou-routes");
 
 // การเชื่อมต่อกับ MySQL
 
 app.use("/api/users", usersRoutes); //เรียกเส้นทางไป user routes
+app.use("/api/report", reportRoutes); //เรียกเส้นทางไป report routes
 
 // สร้าง API เพื่อดึงข้อมูล
 app.get("/api/oag_office", (req, res) => {
