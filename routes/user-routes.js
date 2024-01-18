@@ -9,6 +9,7 @@ router.post("/deleteuseradmin", usersController.deleteuseradmin); //เส้น
 router.post("/searchuser", usersController.searchuser); //เส้นทางไป Control 
 router.post("/login", usersController.login); //เส้นทางไป Control 
 router.get("/readall", usersController.readall); //เส้นทางไป Control 
+router.patch("/update",usersController.update);
 
 
 
