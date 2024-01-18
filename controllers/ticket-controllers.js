@@ -178,7 +178,19 @@ module.exports.inventoryType = async (req, res) => {
     //-- End error handler --
   }
 };
+module.exports.accept = async (req, res) => {
 
+  const UserID = req.body.UserID;
+  const TrackID = req.params.id;
+  const data = [UserID, TrackID]
+  try {
+    const accept = await acceptTicket(data).catch((e) => { throw e })
+    res.json(accept)
+  } catch (error) {
+    res.status(error.code).end();
+  }
+
+}
 //-- Track Status --
 module.exports.trackStatus = async (req, res) => {
   try {
@@ -204,8 +216,8 @@ const insertTicketData = (data) => {
         .promise()
         .query(
           "insert into oag_track " +
-            "(CreateUserID, InventoryTypeID, Sticker, SerialNo, TrackTopic, TrackDescription," +
-            "ContactDetail, StatusID, ActiveStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)",
+          "(CreateUserID, InventoryTypeID, Sticker, SerialNo, TrackTopic, TrackDescription," +
+          "ContactDetail, StatusID, ActiveStatus) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0)",
           [
             data.UserID,
             data.InventoryTypeID,
@@ -226,6 +238,25 @@ const insertTicketData = (data) => {
 };
 //-- end insert function --
 
+//-- accept ticket --
+const acceptTicket = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const dbdata = await globalDB
+        .promise()
+        .query(
+          "update oag_track set RecipientUserID = ?,StatusID = 2  where TrackID = ?",
+          data
+        );
+      resolve(dbdata)
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  })
+}
+//-- end accept ticket
+
 //-- update oag_track function --
 const updateTicketData = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -234,7 +265,7 @@ const updateTicketData = (data) => {
         .promise()
         .query(
           "update oag_track set InventoryTypeID = ?, Sticker = ?, SerialNo = ?, TrackTopic = ?," +
-            "TrackDescription = ?, ContactDetail = ? where TrackID = ?",
+          "TrackDescription = ?, ContactDetail = ? where TrackID = ?",
           [
             data.InventoryTypeID,
             data.Sticker,
@@ -267,8 +298,8 @@ const updateTicketStatus = (data, accept = false) => {
           accept
             ? "update oag_track set StatusID = ?, RecipientUserID = ? where TrackID = ? and StatusID = 1"
             : data.StatusID === 1
-            ? "update oag_track set StatusID = ?, RecipientUserID = NULL  where TrackID = ?"
-            : "update oag_track set StatusID = ? where TrackID = ?",
+              ? "update oag_track set StatusID = ?, RecipientUserID = NULL  where TrackID = ?"
+              : "update oag_track set StatusID = ? where TrackID = ?",
           updateArr
         );
       if (accept) {
@@ -302,7 +333,7 @@ const insertTrackLog = (data) => {
       logToFile(
         "insertTrackLog",
         "insert into trackLog (TrackID, StatusID, UserID, ActiveStatus) VALUES " +
-          `(${data.TrackID}, ${data.StatusID}, ${data.UserID}, 0)`
+        `(${data.TrackID}, ${data.StatusID}, ${data.UserID}, 0)`
       );
       //--- end save sql command ---
       console.error(e);
@@ -358,14 +389,14 @@ const findTicketList = (data) => {
     try {
       const [rows, fields] = await globalDB.promise().query(
         "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
-          " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
-          "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
-          "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
-          "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
-          "left join oag_user creater on ot.CreateUserID = creater.UserID " +
-          "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
-          "where ot.ActiveStatus=0 and " +
-          (data.Role === 3 ? "ot.CreateUserID = ?" : "ot.StatusID = 1"),
+        " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+        "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+        "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+        "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+        "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+        "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
+        "where ot.ActiveStatus=0 and " +
+        (data.Role === 3 ? "ot.CreateUserID = ?" : "ot.StatusID = 1"),
         //: "(ot.RecipientUserID = ? or ot.RecipientUserID IS NULL )"),
         [data.UserID]
       );
@@ -387,13 +418,13 @@ const findAcceptedTicketList = (data) => {
         .promise()
         .query(
           "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
-            " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
-            "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
-            "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
-            "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
-            "left join oag_user creater on ot.CreateUserID = creater.UserID " +
-            "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
-            "where ot.ActiveStatus=0 and ot.RecipientUserID = ? and ot.StatusID <> 1",
+          " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+          "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+          "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+          "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+          "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+          "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
+          "where ot.ActiveStatus=0 and ot.RecipientUserID = ? and ot.StatusID <> 1",
           [data.UserID]
         );
 
@@ -433,7 +464,7 @@ const findTrackStatus = () => {
         .promise()
         .query(
           "select StatusId, StatusName, StatusDescription from oag_trackstatus where " +
-            "ActiveStatus = 0"
+          "ActiveStatus = 0"
         );
       resolve(rows);
     } catch (e) {

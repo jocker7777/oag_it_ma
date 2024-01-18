@@ -30,6 +30,12 @@ router.post(
 router.post("/inventorytype", ticketController.inventoryType);
 
 router.post(
+  "/accept/:id",
+  authen.checkPermission(permission.pending),
+  ticketController.accept
+);
+
+router.post(
   "/option/status",
   authen.checkPermission(permission.option.status),
   ticketController.trackStatus
