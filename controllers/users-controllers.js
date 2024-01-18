@@ -2,7 +2,7 @@
 //const Member = require("../models/Member");
 //const bcrypt = require('bcrypt');
 
-const db = require("../connectdb");
+
 
 //-----------------------------------create_user_admin--------------------
 const createuseradmin = async (req, res, next) => {
@@ -23,7 +23,7 @@ const createuseradmin = async (req, res, next) => {
 
     // ดึงค่า user ID สูงสุดปัจจุบันจากฐานข้อมูล
     const getMaxUserIdSql = "SELECT MAX(UserID) AS maxUserId FROM `oag_user`";
-    const maxUserIdResult = await db.promise().query(getMaxUserIdSql);
+    const maxUserIdResult = await globalDB.promise().query(getMaxUserIdSql);
 
     let nextUserId = 1; // ตั้งค่าเริ่มต้นที่ 1 หากยังไม่มีผู้ใช้ในฐานข้อมูล
 
@@ -58,7 +58,7 @@ const createuseradmin = async (req, res, next) => {
     ];
 
     // แทรกข้อมูลลงในฐานข้อมูล
-    const insertResult = await db.promise().query(insertSql, insertValues);
+    const insertResult = await globalDB.promise().query(insertSql, insertValues);
 
     console.log("Data saved to MySQL:", insertResult);
     res.status(201).send("Data saved successfully");
@@ -108,7 +108,7 @@ const readall = async (req, res) => {
   console.log("finish");
   const sql =
     "SELECT PrefixName,FirstName,LastName,PersonID,Username,OfficeID,PositionName,Email,Telephone FROM oag_user LIMIT 100";
-  db.query(sql, (err, results) => {
+  globalDB.query(sql, (err, results) => {
     if (err) {
       console.error("Error executing query:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -128,7 +128,7 @@ const deleteuseradmin = async (req, res, next) => {
 
     // เช็คว่ามีข้อมูล UserID ที่ต้องการลบหรือไม่
     const checkUserSql = "SELECT * FROM `oag_user` WHERE `UserID` = ?";
-    const checkUserResult = await db
+    const checkUserResult = await globalDB
       .promise()
       .query(checkUserSql, [userIdToDelete]);
 
@@ -142,7 +142,7 @@ const deleteuseradmin = async (req, res, next) => {
     //const deleteSql = 'DELETE FROM `oag_user` WHERE `UserID` = ?';
     const deleteSql =
       "UPDATE `oag_user` SET `ActiveStatus` = 1 WHERE `UserID` = ?";
-    const deleteResult = await db.promise().query(deleteSql, [userIdToDelete]);
+    const deleteResult = await globalDB.promise().query(deleteSql, [userIdToDelete]);
 
     console.log("Data deleted from MySQL:", deleteResult);
     res.status(200).send("Data deleted successfully");
@@ -176,7 +176,7 @@ const searchuser = async (req, res, next) => {
  //"SELECT * FROM oag_user WHERE (FirstName LIKE ? and LastName LIKE ? and Username LIKE ? and PersonID = ?)";
  "SELECT * FROM oag_user where ((FirstName is undefined ) or (FirstName like ?)) and ((LastName is undefined) or (LastName like ?)) and ((UserName is undefined) or (UserName like ?))and ((PersonID is undefined) or (PersonID = ?))";
  
-    const [searchUserResult] = await db
+    const [searchUserResult] = await globalDB
       .promise()
       .query(searchUserSql, searchValues);
       console.log("Number of rows:", searchUserResult.length);
