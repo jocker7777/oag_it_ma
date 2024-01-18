@@ -60,7 +60,6 @@ module.exports.updateData = async (req, res) => {
     //-- End error handler --
   }
 };
-
 module.exports.updateStatus = async (req, res) => {
   try {
     req.body.UserID = req.tokenData.UserID;
@@ -166,9 +165,7 @@ module.exports.trackStatus = async (req, res) => {
   }
 };
 //-- End Track Status --
-
 //----------------------------------------------------------------------
-
 //-- insert oag_track function --
 const insertTicketData = (data) => {
   return new Promise(async (resolve, reject) => {

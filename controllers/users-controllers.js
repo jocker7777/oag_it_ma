@@ -2,7 +2,7 @@
 //const Member = require("../models/Member");
 //const bcrypt = require('bcrypt');
 
-
+const yup = require('yup')
 
 //-----------------------------------create_user_admin--------------------
 const createuseradmin = async (req, res, next) => {
@@ -107,7 +107,7 @@ const login = async (req, res, next) => {
 const readall = async (req, res) => {
   console.log("finish");
   const sql =
-    "SELECT PrefixName,FirstName,LastName,PersonID,Username,OfficeID,PositionName,Email,Telephone FROM oag_user LIMIT 100";
+    `SELECT oag_user.* , oag_office.OfficeName as OfficeName FROM oag_user INNER JOIN oag_office ON oag_user.OfficeID = oag_office.OfficeID ORDER BY UserID DESC LIMIT 1000`;
   globalDB.query(sql, (err, results) => {
     if (err) {
       console.error("Error executing query:", err);
@@ -151,7 +151,81 @@ const deleteuseradmin = async (req, res, next) => {
     res.status(500).send("Internal Server Error");
   }
 };
+const userSchema = () => {
+  return yup.object({
+    UserID: yup.number().required(),
+    FirstName: yup.string().ensure(null).nullable(),
+    LastName: yup.string().ensure(null).nullable(),
+    Email: yup.string().ensure(null).nullable(),
+    Telephone: yup.string().nullable(),
+    ActiveStatus: yup.number().nullable(),
+  })
+}
+const update = async (req, res) => {
+  const updateData = await userSchema().validate(req.body)
+  try {
+    await queryUpdate(updateData).catch((e) => { throw { code: e } })
+    res.status(200).json({ message: `swim good` })
+  } catch (error) {
+    console.warn(`this is error warning from backend : ${error}`)
+  }
+}
+const queryUpdate = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Create arrays to store SET clause and parameters
+      const setClause = [];
+      const params = [];
+      const UserID = data?.UserID;
 
+      // const updateQuery = `UPDATE oag_user SET ActiveStatus = ? WHERE UserID = ?`
+      // Iterate over the keys in the data object
+      for (const key in data) {
+        // Check if the key is a valid column in the table and value is not undefined or empty
+        if (["FirstName", "LastName", "Email", "Telephone", "ActiveStatus", "PersonID", "OfficeID"].includes(key) && data[key] !== undefined && data[key] !== "") {
+          console.log(`this is key : ${key}`);
+
+          if (key === "ActiveStatus") {
+            const selectQuery = `SELECT ActiveStatus FROM oag_user WHERE UserID = ?`
+            const [selectResult] = await globalDB.promise().query(selectQuery, UserID)
+            if (selectResult.length === 0) {
+              return res.status(404).json({ error: 'User Not Found' });
+            }
+            const currentStatus = selectResult[0].ActiveStatus;
+            const newStatus = currentStatus === 0 ? 1 : 0;
+            setClause.push(`${key} = ?`);
+            params.push(newStatus);
+
+          } else {
+            setClause.push(`${key} = ?`);
+            params.push(data[key]);
+          }
+        }
+      }
+      // Check if there are valid fields to update
+      if (setClause.length === 0) {
+        // If no valid fields are provided, resolve immediately
+        resolve("No valid fields to update");
+        return;
+      }
+
+      // Construct the dynamic SQL query
+      const sqlQuery = `UPDATE oag_user SET ${setClause.join(", ")} WHERE UserID = ?`;
+
+      // Add the UserID to the parameters
+      params.push(data.UserID);
+
+      // Execute the query
+      const [rows, fields] = await globalDB.promise().execute(sqlQuery, params);
+
+      // 'rows' contains information about the affected rows
+      resolve(rows);
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
 
 
 //-------------------------------------------User_Search---------------------------------------------------------//
@@ -173,16 +247,16 @@ const searchuser = async (req, res, next) => {
     // Rest of the code remains unchanged
     const searchUserSql =
       //"select * from oag_user where 1=1 and (nvl(FirstName,0)=0 or FirstName like ?  and (nvl(LastName,0)=0 or LastName like ? and  (nvl(UserName,0)=0 or UserName like ?  and (nvl(PersonID,0)=0 or PersonID = ?";
- //"SELECT * FROM oag_user WHERE (FirstName LIKE ? and LastName LIKE ? and Username LIKE ? and PersonID = ?)";
- "SELECT * FROM oag_user where ((FirstName is undefined ) or (FirstName like ?)) and ((LastName is undefined) or (LastName like ?)) and ((UserName is undefined) or (UserName like ?))and ((PersonID is undefined) or (PersonID = ?))";
- 
+      //"SELECT * FROM oag_user WHERE (FirstName LIKE ? and LastName LIKE ? and Username LIKE ? and PersonID = ?)";
+      "SELECT * FROM oag_user where ((FirstName is undefined ) or (FirstName like ?)) and ((LastName is undefined) or (LastName like ?)) and ((UserName is undefined) or (UserName like ?))and ((PersonID is undefined) or (PersonID = ?))";
+
     const [searchUserResult] = await globalDB
       .promise()
       .query(searchUserSql, searchValues);
-      console.log("Number of rows:", searchUserResult.length);
-      console.log(db
-        .promise()
-        .query(searchUserSql, searchValues));
+    console.log("Number of rows:", searchUserResult.length);
+    console.log(db
+      .promise()
+      .query(searchUserSql, searchValues));
     res.json(searchUserResult[0]);
     // if (searchUserResult.length > 0) {
     //   res.json(searchUserResult[0]);
@@ -201,3 +275,4 @@ exports.deleteuseradmin = deleteuseradmin;
 exports.searchuser = searchuser;
 exports.login = login;
 exports.readall = readall;
+exports.update = update;
