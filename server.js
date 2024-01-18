@@ -9,7 +9,8 @@ global.environment = "dev"; // please change to production on production
 const bodyParser = require("body-parser");
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(
-  cors({
+  cors(
+	 {
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST",
   })

@@ -38,7 +38,7 @@ const logIn = async (req, res) => {
     //-- sign token --
     const token = await authen.signToken(dataRows[0]);
     //-- end sign token --
-    res.json({ token: token });
+    res.json({ accessToken: token });
   } catch (e) {
     //-- if any error occur return server error status --
     if (!e.code) {
