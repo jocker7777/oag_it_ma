@@ -130,6 +130,36 @@ module.exports.list = async (req, res) => {
   }
 };
 
+module.exports.ownedList = async (req, res) => {
+  try {
+    req.body.UserID = req.tokenData.UserID;
+    //-- validate search variable --
+    const queryData = await yup
+      .object({
+        UserID: yup.number().required(),
+      })
+      .validate(req.body)
+      .catch((e) => {
+        throw { code: 400 };
+      });
+    //-- end validate search variable --
+    //-- find list data --//
+    const list = await findAcceptedTicketList(queryData).catch((e) => {
+      throw e;
+    });
+    //-- find list data --//
+    res.json(list);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      return res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+
 module.exports.inventoryType = async (req, res) => {
   try {
     //-- find list data --//
@@ -349,7 +379,34 @@ const findTicketList = (data) => {
 };
 //-- end find ticket list --
 
-//-- find ticket list --
+//-- find accepted ticket list --
+const findAcceptedTicketList = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select TrackID, InventoryTypeID, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
+            " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+            "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+            "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+            "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+            "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+            "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
+            "where ot.ActiveStatus=0 and ot.RecipientUserID = ? and ot.StatusID <> 1",
+          [data.UserID]
+        );
+
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find accepted ticket list --
+
+//-- find inventoryType list --
 const findInventoryType = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -366,7 +423,7 @@ const findInventoryType = (data) => {
     }
   });
 };
-//-- end find ticket list --
+//-- end find inventoryType list --
 
 //-- find trackstatus --
 const findTrackStatus = () => {
