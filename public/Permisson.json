@@ -4,6 +4,7 @@
     "update": { "data": [1, 2], "status": [1, 2] },
     "delete": [1],
     "list": [1, 2, 3],
+    "ownedList": [1, 2],
     "option": { "status": [1, 2, 3] }
   },
   "report": {
@@ -12,7 +13,7 @@
   },
   "user": {
     "update": [1, 2, 3],
-    "search": [2, 3],
-    "create": [3]
+    "search": [1, 2],
+    "create": [1]
   }
 }

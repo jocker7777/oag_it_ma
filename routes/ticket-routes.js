@@ -3,8 +3,6 @@ const router = express.Router();
 const ticketController = require("../controllers/ticket-controllers");
 const authen = require("../public/authen-middleware");
 const permission = require("../public/Permisson.json").ticket;
-const ticketStatusPermission = require("../public/Permisson.json").ticket.option
-  .trackStatus;
 router.post(
   "/create",
   authen.checkPermission(permission.create),
@@ -33,8 +31,14 @@ router.post("/inventorytype", ticketController.inventoryType);
 
 router.post(
   "/option/status",
-  authen.checkPermission(ticketStatusPermission),
+  authen.checkPermission(permission.option.status),
   ticketController.trackStatus
+);
+
+router.post(
+  "/ownedlist",
+  authen.checkPermission(permission.ownedList),
+  ticketController.ownedList
 );
 
 module.exports = router;
