@@ -1,4 +1,9 @@
 const express = require("express");
+<<<<<<< HEAD
+=======
+var bodyParser = require("body-parser");
+
+>>>>>>> origin/jo
 const db = require("./connectdb"); // Import the MySQL connection
 const app = express();
 const cors = require("cors");
@@ -35,22 +40,34 @@ app.use(accessLog);
 
 //-- config request data type --//
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 const usersRoutes = require("./routes/user-routes");
+<<<<<<< HEAD
 const authRoutes = require("./routes/auth-routes");
 const ticketRoutes = require("./routes/ticket-routes");
 const officeRoutes = require("./routes/office-routes");
 const reportRoutes = require("./routes/report-routes");
 const userTestRoutes = require("./routes/user-test-routes");
+=======
+const reportRoutes = require("./routes/report-routes");
+>>>>>>> origin/jo
 //const mousRoutes = require("./routes/mou-routes");
 
 // การเชื่อมต่อกับ MySQL
 
 app.use("/api/users", usersRoutes); //เรียกเส้นทางไป user routes
+<<<<<<< HEAD
 app.use("/api/auth", authRoutes); //เรียกเส้นทางไป Auth( login ) routes
 app.use("/api/ticket", ticketRoutes); //เรียกเส้นทางไป ticket routes
 app.use("/api/office", officeRoutes); //เรียกเส้นทางไป office routes
 app.use("/api/report", reportRoutes);
 app.use("/api/usertest", userTestRoutes);
+=======
+app.use("/api/report", reportRoutes); //เรียกเส้นทางไป report routes
+
+>>>>>>> origin/jo
 // สร้าง API เพื่อดึงข้อมูล
 app.get("/api/oag_office", (req, res) => {
   const sql = "SELECT * FROM oag_user LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ
