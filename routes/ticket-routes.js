@@ -9,7 +9,7 @@ router.post(
   ticketController.create
 );
 
-router.post(
+router.put(
   "/update/data",
   authen.checkPermission(permission.update.data),
   ticketController.updateData
