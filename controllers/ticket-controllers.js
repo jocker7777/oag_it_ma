@@ -446,7 +446,7 @@ const findAcceptedTicketList = (data) => {
       const [rows, fields] = await globalDB
         .promise()
         .query(
-          "select TrackID, InventoryTypeID, Sticker,SerialNo,TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
+          "select TrackID, InventoryTypeID, Sticker,SerialNO,TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
           " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
           "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
           "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
