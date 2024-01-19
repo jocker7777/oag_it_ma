@@ -45,7 +45,7 @@ module.exports.updateData = async (req, res) => {
       });
     //-- end validate update variable --
     //-- update oag_track data --//
-    await updateTicketData(updateData).catch((e) => {
+    await testUpdateTicket(updateData).catch((e) => {
       throw e;
     });
     //-- end update oag_track data --//
@@ -256,7 +256,6 @@ const acceptTicket = (data) => {
   })
 }
 //-- end accept ticket
-
 //-- update oag_track function --
 const updateTicketData = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -284,7 +283,37 @@ const updateTicketData = (data) => {
   });
 };
 //-- end update ticket function --
+//-- start test update ticket function --
+const testUpdateTicket = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const setClause = [];
+      const params = [];
 
+      // temp fix null  insertr  
+      for (const key in data) {
+        if (["InventoryTypeID", "Sticker", "SerialNo", "TrackTopic", "TrackDescription", "ContactDetail"].includes(key) && data[key] !== undefined && data[key] !== '') {
+          setClause.push(`${key} = ?`);
+          params.push(data[key])
+        }
+      }
+      if (setClause.length === 0) {
+        // If no valid fields are provided, resolve immediately
+        resolve("No valid fields to update");
+        return;
+      }
+      const updateQuery = `UPDATE oag_track SET ${setClause.join(", ")} WHERE TrackID = ?`
+      params.push(data.TrackID)
+
+      const [rows, fields] = await globalDB.promise().execute(updateQuery, params)
+      resolve(rows)
+    } catch (error) {
+      console.log(error);
+      reject(error)
+    }
+  })
+}
+//-- end test update ticket function --
 //-- update oag_track status function --
 const updateTicketStatus = (data, accept = false) => {
   return new Promise(async (resolve, reject) => {
@@ -303,7 +332,7 @@ const updateTicketStatus = (data, accept = false) => {
           updateArr
         );
       if (accept) {
-        if (dbdata?.affectedRows == 0) {
+        if (dbdata?.affectedRows === 0) {
           reject({ code: 409 });
         }
       }
