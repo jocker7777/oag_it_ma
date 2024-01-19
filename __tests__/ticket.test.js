@@ -201,6 +201,52 @@ describe("update status", () => {
   });
 });
 
+describe("ticket ownedlist", () => {
+  it("empty token data should res 400", async () => {
+    const mockRes = mockResponse();
+    await ticket.ownedList({ body: {}, tokenData: {} }, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(400);
+  });
+
+  it("empty unexpect error should res 500", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+      end: jest.fn(),
+    };
+    globalDB.query.mockResolvedValue({});
+    await ticket.ownedList(undefined, mockRes);
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("db error should res 500", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockRejectedValue("Rejected");
+    await ticket.ownedList(
+      {
+        body: {},
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("ownedList happy flow", async () => {
+    const mockRes = mockResponse();
+    globalDB.query.mockResolvedValue([[], []]);
+    await ticket.ownedList(
+      {
+        body: {},
+        tokenData: { UserID: 888, Role: 1 },
+      },
+      mockRes
+    );
+    expect(mockRes.json).toHaveBeenCalledWith([]);
+  });
+});
+
 describe("ticket list", () => {
   it("empty token data should res 400", async () => {
     const mockRes = mockResponse();
