@@ -55,14 +55,6 @@ app.use("/api/office", officeRoutes); //เรียกเส้นทางไ�
 app.use("/api/report", reportRoutes);
 app.use("/api/usertest", userTestRoutes);
 // สร้าง API เพื่อดึงข้อมูล
-app.get("/api/oag_office", (req, res) => {
-  const sql = "SELECT * FROM oag_user LIMIT 10"; // เปลี่ยน mytable เป็นชื่อตารางของคุณ
-  db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
-});
-
 // เริ่มต้นเซิร์ฟเวอร์
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
