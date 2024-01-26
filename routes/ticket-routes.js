@@ -46,6 +46,5 @@ router.post(
   authen.checkPermission(permission.ownedList),
   ticketController.ownedList
 );
-// router.post("/complete",authen.checkPermission(permission.complete),ticketController.completeTicket)
 
 module.exports = router;
