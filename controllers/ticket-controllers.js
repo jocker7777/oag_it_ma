@@ -421,7 +421,8 @@ const findTicketList = (data) => {
       const [rows, fields] = await globalDB.promise().query(
         "select TrackID, InventoryTypeID,Sticker,SerialNO, TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
         " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
-        "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+        "as CreateDate,DATE_FORMAT(DATE_ADD(ot.UpdateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+        "as UpdateDate,CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
         "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
         "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
         "left join oag_user creater on ot.CreateUserID = creater.UserID " +
