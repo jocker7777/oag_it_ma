@@ -4,6 +4,7 @@
     "create": [1, 2, 3],
     "update": { "data": [1, 2], "status": [1, 2] },
     "delete": [1],
+    "complete": [1,2],
     "list": [1, 2, 3],
     "ownedList": [1, 2],
     "option": { "status": [1, 2, 3] }

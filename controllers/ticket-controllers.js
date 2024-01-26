@@ -191,6 +191,7 @@ module.exports.accept = async (req, res) => {
   }
 
 }
+
 //-- Track Status --
 module.exports.trackStatus = async (req, res) => {
   try {
@@ -282,6 +283,7 @@ const updateTicketData = (data) => {
     }
   });
 };
+
 //-- end update ticket function --
 //-- start test update ticket function --
 const testUpdateTicket = (data) => {
@@ -325,9 +327,9 @@ const updateTicketStatus = (data, accept = false) => {
         .promise()
         .query(
           accept
-            ? "update oag_track set StatusID = ?, RecipientUserID = ? where TrackID = ? and StatusID = 1"
+            ? "UPDATE oag_track set StatusID = ?, RecipientUserID = ? WHERE TrackID = ? AND StatusID = 1"
             : data.StatusID === 1
-              ? "update oag_track set StatusID = ?, RecipientUserID = NULL  where TrackID = ?"
+              ? "UPDATE oag_track set StatusID = ?, RecipientUserID = NULL  where TrackID = ?"
               : "update oag_track set StatusID = ? where TrackID = ?",
           updateArr
         );
@@ -429,7 +431,6 @@ const findTicketList = (data) => {
         //: "(ot.RecipientUserID = ? or ot.RecipientUserID IS NULL )"),
         [data.UserID]
       );
-
       resolve(rows);
     } catch (e) {
       console.error(e);
@@ -448,7 +449,8 @@ const findAcceptedTicketList = (data) => {
         .query(
           "select TrackID, InventoryTypeID, Sticker,SerialNO,TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
           " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
-          "as CreateDate, CONCAT_WS(' ', creater.FirstName, creater.LastName) AS CreateName, " +
+          "as CreateDate,DATE_FORMAT(DATE_ADD(ot.UpdateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+          "as UpdateDate,CONCAT_WS(' ',creater.FirstName, creater.LastName) AS CreateName, " +
           "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
           "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
           "left join oag_user creater on ot.CreateUserID = creater.UserID " +
