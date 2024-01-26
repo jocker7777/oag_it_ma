@@ -20,7 +20,7 @@ const logIn = async (req, res) => {
     });
 
     if (!dataRows[0]?.UserID || dataRows[0]?.ActiveStatus !== 0)
-      throw { code: 401 };
+      throw { code: 403 };
     delete dataRows[0].password;
     delete dataRows[0].ResetPasswordStatus;
     delete dataRows[0].ActiveStatus;
