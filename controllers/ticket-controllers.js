@@ -98,6 +98,8 @@ module.exports.updateStatus = async (req, res) => {
   }
 };
 
+
+
 module.exports.list = async (req, res) => {
   try {
     req.body.UserID = req.tokenData.UserID;
@@ -129,6 +131,38 @@ module.exports.list = async (req, res) => {
     //-- End error handler --
   }
 };
+
+
+module.exports.completeList = async (req, res) => {
+  try {
+    req.body.UserID = req.tokenData.UserID;
+    //-- validate search variable --
+    const queryData = await yup
+      .object({
+        UserID: yup.number().required(),
+      })
+      .validate(req.body)
+      .catch((e) => {
+        throw { code: 400 };
+      });
+    //-- end validate search variable --
+    //-- find list data --//
+    const list = await findCompleteTicket(queryData).catch((e) => {
+      throw e;
+    });
+    //-- find list data --//
+    res.json(list);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      return res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+}
+
 
 module.exports.ownedList = async (req, res) => {
   try {
@@ -207,6 +241,17 @@ module.exports.trackStatus = async (req, res) => {
     //-- End error handler --
   }
 };
+
+module.exports.closeTicket = async (req, res) => {
+  try {
+
+
+  } catch (error) {
+    res.status(500).json({
+      message: `Something went wrong : ${error?.message}`
+    })
+  }
+}
 //-- End Track Status --
 //----------------------------------------------------------------------
 //-- insert oag_track function --
@@ -347,6 +392,36 @@ const updateTicketStatus = (data, accept = false) => {
 };
 //-- end update status function --//
 
+//-- finished ticket function --//
+
+const finishedTicketStatus = async (data, accept = false) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+
+      if (accept) {
+        const [dbData] = await globalDB
+          .promise()
+          .query(
+            "UPDATE oag_track SET StatusID = 3 WHERE RecipientUserID = ? ",
+            data
+          )
+        resolve(true);
+      }
+      else {
+        res.status(400).json({ message: "Bad Request" })
+      }
+    } catch (error) {
+      console.log(error);
+      reject({ code: 500 });
+    }
+  })
+}
+
+
+
+
+
+
 //-- insert oag_tracklog --
 const insertTrackLog = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -456,7 +531,7 @@ const findAcceptedTicketList = (data) => {
           "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
           "left join oag_user creater on ot.CreateUserID = creater.UserID " +
           "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
-          "where ot.ActiveStatus=0 and ot.RecipientUserID = ? and ot.StatusID <> 1",
+          "where ot.ActiveStatus=0 and ot.RecipientUserID = ? and ot.StatusID <> 1 and ot.StatusID <> 3",
           [data.UserID]
         );
       resolve(rows);
@@ -467,6 +542,35 @@ const findAcceptedTicketList = (data) => {
   });
 };
 //-- end find accepted ticket list --
+
+const findCompleteTicket = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "select TrackID, InventoryTypeID, Sticker,SerialNO,TrackTopic, TrackDescription, ContactDetail, ot.StatusID, " +
+          " StatusName, DATE_FORMAT(DATE_ADD(ot.CreateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+          "as CreateDate,DATE_FORMAT(DATE_ADD(ot.UpdateDate, INTERVAL 543 YEAR), '%d/%m/%Y %H:%i')" +
+          "as UpdateDate,CONCAT_WS(' ',creater.FirstName, creater.LastName) AS CreateName, " +
+          "CONCAT_WS(' ', accepter.FirstName, accepter.LastName) AS RecipientName " +
+          "from oag_track ot left join oag_trackstatus ost on ot.StatusID = ost.StatusID " +
+          "left join oag_user creater on ot.CreateUserID = creater.UserID " +
+          "left join oag_user accepter on ot.RecipientUserID = accepter.UserID " +
+          "where ot.ActiveStatus=0 and ot.RecipientUserID = ? and ot.StatusID = 3",
+          [data.UserID]
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+}
+
+
+
+
 
 //-- find inventoryType list --
 const findInventoryType = (data) => {
