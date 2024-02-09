@@ -62,7 +62,7 @@ describe("verifytoken", () => {
 describe("permissionCheck", () => {
   it("empty role should fail 401", async () => {
     const mockExpress = {
-      req: { headers: { authorization: token } },
+      req: { headers: { authorization: `Bearer ${token}` } },
       res: {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
@@ -116,7 +116,7 @@ describe("permissionCheck", () => {
 
   it("role not match should fail 403", async () => {
     const mockExpress = {
-      req: { headers: { authorization: token } },
+      req: { headers: { authorization: `Bearer ${token}` } },
       res: {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
@@ -134,7 +134,7 @@ describe("permissionCheck", () => {
 
   it("check role happy flow", async () => {
     const mockExpress = {
-      req: { headers: { authorization: token } },
+      req: { headers: { authorization: `Bearer ${token}` } },
       res: {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
