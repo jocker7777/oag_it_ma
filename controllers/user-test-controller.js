@@ -38,7 +38,7 @@ module.exports.updateData = async (req, res) => {
 module.exports.insertUser = async (req, res) => {
   try {
     //-- validate insert variable --
-    const token = req.body.token;
+    const token = req.headers.authorization.split(" ")[1];
     let insertData = await insertSchema()
       .validate(req.body)
       .catch((e) => {

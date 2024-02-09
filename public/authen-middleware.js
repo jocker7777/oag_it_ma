@@ -41,9 +41,9 @@ module.exports.checkPermission = (allowRoles = []) => {
   return (req, res, next) => {
     try {
       //-- Check if token header exist --
-      if (!req.body.token) return res.status(401).end();
-      //const token = req.headers.authorization.split(" ")[1]; //for use with correct auth later
-      const token = req.body.token;
+      if (!req.headers.authorization) return res.status(401).end();
+      const token = req.headers.authorization?.split(" ")[1];
+      //const token = req.headers.Authorization;
       //-- End check token header exist --
       //-- Verify if token valid and push data to req.body.tokenData --
       jwt.verify(token, keyToSign, function (err, decoded) {

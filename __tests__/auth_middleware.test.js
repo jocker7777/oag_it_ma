@@ -1,7 +1,7 @@
 const authen = require("../public/authen-middleware");
 
 const fakeToken =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.Gz7-ovZdlkMx6MhGtjlpjhr9-kOwEMCzCWBYyc0UYT8";
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.Gz7-ovZdlkMx6MhGtjlpjhr9-kOwEMCzCWBYyc0UYT8";
 const mockResponse = () => {
   return {
     status: jest.fn().mockReturnThis(),
@@ -62,7 +62,7 @@ describe("verifytoken", () => {
 describe("permissionCheck", () => {
   it("empty role should fail 401", async () => {
     const mockExpress = {
-      req: { body: { token: token } },
+      req: { headers: { authorization: token } },
       res: {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
@@ -116,7 +116,7 @@ describe("permissionCheck", () => {
 
   it("role not match should fail 403", async () => {
     const mockExpress = {
-      req: { body: { token: token } },
+      req: { headers: { authorization: token } },
       res: {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),
@@ -134,7 +134,7 @@ describe("permissionCheck", () => {
 
   it("check role happy flow", async () => {
     const mockExpress = {
-      req: { body: { token: token } },
+      req: { headers: { authorization: token } },
       res: {
         status: jest.fn().mockReturnThis(),
         json: jest.fn(),

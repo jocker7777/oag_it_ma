@@ -3,8 +3,8 @@ const log4js = require("log4js");
 
 module.exports.accessLog = async (req, res, next) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-
-  jwtDecode(req.body.token).then((UserID) => {
+  console.log(req.headers)
+  jwtDecode(req.headers.authorization?.split(" ")[1]).then((UserID) => {
     const data = {
       Method: req.method,
       PathName: req.originalUrl,
@@ -12,7 +12,7 @@ module.exports.accessLog = async (req, res, next) => {
       IP: ip.replace("::ffff:", ""),
       UserID: UserID ? UserID : null,
     };
-    delete data.RequestBody.token;
+    //delete data.RequestBody.token;
     insertAccessLog(data).then((isSave) => {
       if (!isSave)
         logToFile(
