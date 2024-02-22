@@ -48,6 +48,59 @@ module.exports.reportSearch = async (req, res) => {
 };
 //-- End search for track recode from oag_track --
 
+
+//-- Report groupby Track Status --
+module.exports.TrackStatusCount = async (req, res) => {
+  try {
+    const reportList = await findTrackGroupByStatus();
+    res.json(reportList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Report groupby Track Status --
+
+//-- Report groupby Inventory type --
+module.exports.TrackInventoryCount = async (req, res) => {
+  try {
+    const reportList = await findTrackGroupByInventoryType();
+    res.json(reportList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Report groupby Inventory type --
+
+//-- Report groupby Inventory type --
+module.exports.TrackByMonth = async (req, res) => {
+  try {
+    const reportList = await findTrackAmountByMonth();
+    res.json(reportList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Report groupby Inventory type --
+
+
 //query data form oag_tracklog, oag_user, oag_status, oag_inventory_type
 const findTrackList = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -95,6 +148,67 @@ const findAccessLogList = (data) => {
   });
 };
 //-- end find accesslog --
+
+//-- find Track group by status --
+const findTrackGroupByStatus = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "SELECT IFNULL(amount, 0) as amount, oag_trackstatus.StatusID, StatusName from oag_trackstatus"+
+          " left join (select count(TrackID) as amount, StatusID from oag_track WHERE ActiveStatus  = 0 group by StatusID) as oag_track" +
+          " on oag_trackstatus.StatusID  = oag_track.StatusID where ActiveStatus = 0"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find Track group by status --
+
+//-- find Track group by inventory type id --
+const findTrackGroupByInventoryType = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "SELECT IFNULL(amount, 0) as amount, oag_inventory_type.InventoryTypeID , InventoryTypeName  from oag_inventory_type"+
+          "  left join (select count(TrackID) as amount, InventoryTypeID from oag_track WHERE ActiveStatus  = 0 group by InventoryTypeID)"+
+          " as oag_track on oag_inventory_type.InventoryTypeID  = oag_track.InventoryTypeID WHERE ActiveStatus = 0"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find Track group by inventory type id --
+
+//-- find Track group by month --
+const findTrackAmountByMonth = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "SELECT count(TrackID) as amount, DATE_FORMAT(CreateDate, '%m-%Y') as date from oag_track WHERE ActiveStatus = 0 group by date"+
+          " limit 12"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find Track group by month --
+
+
 
 //-- prepare where query for report search --
 const prepareReportSearchWhere = (data) => {

@@ -17,4 +17,19 @@ router.post(
   reportController.reportSearch
 );
 
+router.post(
+  "/trackamountbystatus",
+  reportController.TrackStatusCount
+);
+
+router.post(
+  "/trackamountbyinventory",
+  reportController.TrackInventoryCount
+);
+
+router.post(
+  "/trackamountbymonth",
+  reportController.TrackByMonth
+);
+
 module.exports = router;
