@@ -3,18 +3,35 @@ const db = require("./connectdb"); // Import the MySQL connection
 const app = express();
 const cors = require("cors");
 const bodyParserErrorHandler = require("express-body-parser-error-handler");
-const port = process.env.PORT || 3500;
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  keyGenerator: (req) => req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+  // skip: (req) => req.path === '/api/auth/login', // Skip rate limiting for /public-path
+  handler: (req, res, next, options) => {
+    res.status(options.statusCode).json({ error: `Rate limit exceeded, please try again in ${options.windowMs / 1000} seconds` });
+  },
+  statusCode: 429 // Default status code for rate limit exceeded
+});
+
+const port = process.env.PORT || 3001;
 global.environment = "dev"; // please change to production on production
 //-- config express data handler and origin --//
 const bodyParser = require("body-parser");
+
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(
   cors(
-	 {
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST",
-  })
+    {
+      origin: "*",
+      methods: "GET,HEAD,PUT,PATCH,POST",
+      optionsSuccessStatus: 204,
+    })
 );
+app.use(limiter);
 app.use(
   bodyParserErrorHandler({
     errorMessage: (err) => {
@@ -26,7 +43,6 @@ app.use(
     },
   })
 );
-
 //-- log --//
 const accessLog = require("./public/access-log").accessLog;
 app.use(accessLog);
@@ -56,6 +72,6 @@ app.use("/api/report", reportRoutes);
 app.use("/api/usertest", userTestRoutes);
 // สร้าง API เพื่อดึงข้อมูล
 // เริ่มต้นเซิร์ฟเวอร์
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(port, async (req, res) => {
+  console.log(`Server is running on port running ${port}`);
 });

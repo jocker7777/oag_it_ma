@@ -27,11 +27,13 @@ module.exports.reportSearch = async (req, res) => {
   try {
     let startDate = thaiDateToEng(req.body.StartDate, false, true);
     let endDate = thaiDateToEng(req.body.EndDate, true, true);
+    let InventoryTypeID = checkInventory(req.body.InventoryTypeID, true)
     const trackList = await findTrackList({
       StartDate: startDate,
       EndDate: endDate,
       StaffSearchWord: req.body.StaffSearchWord,
       UserSearchWord: req.body.UserSearchWord,
+      InventoryTypeID: InventoryTypeID,
       Role: req.tokenData?.Role,
       UserID: req.tokenData?.UserID,
     });
@@ -48,6 +50,59 @@ module.exports.reportSearch = async (req, res) => {
 };
 //-- End search for track recode from oag_track --
 
+
+//-- Report groupby Track Status --
+module.exports.TrackStatusCount = async (req, res) => {
+  try {
+    const reportList = await findTrackGroupByStatus();
+    res.json(reportList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Report groupby Track Status --
+
+//-- Report groupby Inventory type --
+module.exports.TrackInventoryCount = async (req, res) => {
+  try {
+    const reportList = await findTrackGroupByInventoryType();
+    res.json(reportList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Report groupby Inventory type --
+
+//-- Report groupby Inventory type --
+module.exports.TrackByMonth = async (req, res) => {
+  try {
+    const reportList = await findTrackAmountByMonth();
+    res.json(reportList);
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+};
+//-- End Report groupby Inventory type --
+
+
 //query data form oag_tracklog, oag_user, oag_status, oag_inventory_type
 const findTrackList = (data) => {
   return new Promise(async (resolve, reject) => {
@@ -57,15 +112,16 @@ const findTrackList = (data) => {
         .promise()
         .query(
           "select ot.TrackID, ot.TrackTopic, ou1.UserID, ou1.FirstName, ou1.LastName, " +
-            "ot.InventoryTypeID, oit.InventoryTypeName , " +
-            "CONCAT(DATE_FORMAT(ot.CreateDate, '%d/%m'),'/',YEAR(ot.CreateDate)+543) as createDate, " +
-            "ot.TrackDescription, ot.SerialNO, ot.Sticker, ot.StatusID, ots.StatusName, " +
-            "CONCAT(ou2.FirstName,' ',ou2.LastName) as RecipientName from oag_track as ot " +
-            "left join oag_user as ou1 on ot.CreateUserID = ou1.UserID left join oag_user as ou2 on " +
-            "ot.RecipientUserID = ou2.UserID left join oag_trackstatus as ots on ot.StatusID " +
-            "= ots.StatusID left join oag_inventory_type as oit on ot.InventoryTypeID = " +
-            "oit.InventoryTypeID where ot.ActiveStatus = 0" +
-            whereText
+          "ot.InventoryTypeID, oit.InventoryTypeName , " +
+          "CONCAT(DATE_FORMAT(ot.CreateDate, '%d/%m'),'/',YEAR(ot.CreateDate)+543) as createDate, " +
+          "CONCAT(DATE_FORMAT(ot.UpdateDate, '%d/%m'),'/',YEAR(ot.CreateDate)+543) as updateDate, " +
+          "ot.TrackDescription, ot.SerialNO, ot.Sticker, ot.StatusID, ots.StatusName, " +
+          "CONCAT(ou2.FirstName,' ',ou2.LastName) as RecipientName from oag_track as ot " +
+          "left join oag_user as ou1 on ot.CreateUserID = ou1.UserID left join oag_user as ou2 on " +
+          "ot.RecipientUserID = ou2.UserID left join oag_trackstatus as ots on ot.StatusID " +
+          "= ots.StatusID left join oag_inventory_type as oit on ot.InventoryTypeID = " +
+          "oit.InventoryTypeID where ot.ActiveStatus = 0" +
+          whereText
         );
       resolve(rows);
     } catch (e) {
@@ -84,7 +140,7 @@ const findAccessLogList = (data) => {
         .promise()
         .query(
           "select ID, Method, PathName, RequestDate, IP from oag_accesslog where " +
-            "RequestDate >= ? and RequestDate < ?",
+          "RequestDate >= ? and RequestDate < ?",
           [data.StartDate, data.EndDate]
         );
       resolve(rows);
@@ -96,9 +152,73 @@ const findAccessLogList = (data) => {
 };
 //-- end find accesslog --
 
+//-- find Track group by status --
+const findTrackGroupByStatus = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "SELECT IFNULL(amount, 0) as amount, oag_trackstatus.StatusID, StatusName from oag_trackstatus" +
+          " left join (select count(TrackID) as amount, StatusID from oag_track WHERE ActiveStatus  = 0 group by StatusID) as oag_track" +
+          " on oag_trackstatus.StatusID  = oag_track.StatusID where ActiveStatus = 0"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find Track group by status --
+
+//-- find Track group by inventory type id --
+const findTrackGroupByInventoryType = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "SELECT IFNULL(amount, 0) as amount, oag_inventory_type.InventoryTypeID , InventoryTypeName  from oag_inventory_type" +
+          "  left join (select count(TrackID) as amount, InventoryTypeID from oag_track WHERE ActiveStatus  = 0 group by InventoryTypeID)" +
+          " as oag_track on oag_inventory_type.InventoryTypeID  = oag_track.InventoryTypeID WHERE ActiveStatus = 0"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find Track group by inventory type id --
+
+//-- find Track group by month --
+const findTrackAmountByMonth = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const [rows, fields] = await globalDB
+        .promise()
+        .query(
+          "SELECT count(TrackID) as amount, DATE_FORMAT(CreateDate, '%m-%Y') as date from oag_track WHERE ActiveStatus = 0 group by date" +
+          " limit 12"
+        );
+      resolve(rows);
+    } catch (e) {
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//-- end find Track group by month --
+
+
+
 //-- prepare where query for report search --
 const prepareReportSearchWhere = (data) => {
   let where = "";
+  console.log(data);
+  if (data.InventoryTypeID != null)
+    where += ` and ot.InventoryTypeID = ${data.InventoryTypeID}`;
   if (data.StartDate != null)
     where += ` and ot.createDate >= '${data.StartDate}'`;
   if (data.EndDate != null) where += ` and ot.createDate < '${data.EndDate}'`;
@@ -136,6 +256,14 @@ const prepareReportSearchWhere = (data) => {
 //-- end prepare query for report search --
 
 // format date dd/mm/YYYY BE to YYYY/mm/dd CE
+const checkInventory = (data, nullAble) => {
+  if (data) {
+    return data
+  } else {
+    if (nullAble) return data = null
+  }
+
+}
 const thaiDateToEng = (date, end = false, nullAble = false) => {
   try {
     if (date) {

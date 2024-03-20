@@ -26,6 +26,11 @@ router.post(
   authen.checkPermission(permission.list),
   ticketController.list
 );
+router.post(
+  "/list/:id",
+  authen.checkPermission(permission.list),
+  ticketController.single
+);
 
 router.post("/inventorytype", ticketController.inventoryType);
 
@@ -46,5 +51,19 @@ router.post(
   authen.checkPermission(permission.ownedList),
   ticketController.ownedList
 );
-
+router.post(
+  "/trackupdate",
+  authen.checkPermission(permission.list),
+  ticketController.trackUpdate
+);
+router.post(
+  "/complete",
+  authen.checkPermission(permission.list),
+  ticketController.completeList
+)
+router.post(
+  "/close",
+  authen.checkPermission(permission.complete),
+  ticketController.closeTicket
+)
 module.exports = router;

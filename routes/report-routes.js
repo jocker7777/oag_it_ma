@@ -17,4 +17,22 @@ router.post(
   reportController.reportSearch
 );
 
+router.post(
+  "/trackamountbystatus",
+  authen.checkPermission(searchPermission),
+  reportController.TrackStatusCount
+);
+
+router.post(
+  "/trackamountbyinventory",
+  authen.checkPermission(searchPermission),
+  reportController.TrackInventoryCount
+);
+
+router.post(
+  "/trackamountbymonth",
+  authen.checkPermission(searchPermission),
+  reportController.TrackByMonth
+);
+
 module.exports = router;

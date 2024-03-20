@@ -3,6 +3,7 @@
 //const bcrypt = require('bcrypt');
 
 const yup = require('yup')
+const verifyToken = require("../public/authen-middleware").verifyToken;
 
 //-----------------------------------create_user_admin--------------------
 const createuseradmin = async (req, res, next) => {
@@ -67,6 +68,132 @@ const createuseradmin = async (req, res, next) => {
     res.status(500).send("Internal Server Error");
   }
 };
+//schema
+const insertSchema = () => {
+  return yup.object({
+    //--- Schema validation setting ---
+    FirstName: yup
+      .string()
+      .matches(/^[ก-๏]+$/gm)
+      .nullable(),
+    LastName: yup
+      .string()
+      .matches(/^[ก-๏]+$/gm)
+      .nullable(),
+    FirstNameEng: yup
+      .string()
+      .trim()
+      .required()
+      .matches(/^[a-zA-Z]+$/gm),
+    LastNameEng: yup
+      .string()
+      .trim()
+      .required()
+      .matches(/^[a-zA-Z]+$/gm),
+    Username: yup.string().trim().nullable(),
+    Telephone: yup.string().trim().nullable(),
+    PersonID: yup
+      .string()
+      .trim()
+      .required()
+      .min(13)
+      .max(13)
+      .matches(/^[0-9]+$/gm)
+      .length(13),
+    Email: yup.string().trim().nullable(),
+    OfficeID: yup.number().required(),
+    Role: yup.number().default(3),
+    activeStatus: yup.number().default(1),
+  });
+};
+
+module.exports.insertUser = async (req,res) => {
+  try {
+    //-- validate insert variable --
+    const token = req.body.token;
+    let insertData = await insertSchema()
+      .validate(req.body)
+      .catch((e) => {
+        throw { code: 400 };
+      });
+    //-- end validate insert variable --
+    insertData = setUserNameData(insertData);
+    if (!insertData) throw { code: 400 };
+    //-- insert oag_user data --//
+    checkRole = await verifyToken(token).catch((e) => {
+      console.error(e);
+      return false;
+    });
+    //-- set role if insert from role admin --
+    !checkRole ? (insertData.Role = 3) : (insertData.Role = insertData.Role);
+    //-- end set role --
+    await insertUserData(insertData).catch((e) => {
+      throw e;
+    });
+    //-- end insert oag_user data --//
+    res.status(200).end();
+  } catch (e) {
+    //-- if any error occur return server error status --
+    if (!e.code) {
+      console.error(e);
+      return res.status(500).end();
+    }
+    res.status(e.code).end();
+    //-- End error handler --
+  }
+}
+//---------------------- Insert User Data-----------------
+
+const insertUserData = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const dbdata = await globalDB
+        .promise()
+        .query(
+          "insert into oag_user (Username, Password, FirstName, LastName, FirstNameEng, LastNameEng," +
+            "Telephone, PersonId, Email, OfficeID, Role, ActiveStatus) VALUES " +
+            "( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0 )",
+          [
+            data.Username,
+            data.Password,
+            data.FirstName,
+            data.LastName,
+            data.FirstNameEng,
+            data.LastNameEng,
+            data.Telephone,
+            data.PersonID,
+            data.Email,
+            data.OfficeID,
+            data.Role,
+          ]
+        );
+      resolve(dbdata);
+    } catch (e) {
+      if (e.errno === 1062) return reject({ code: 409 });
+      console.error(e);
+      reject({ code: 500 });
+    }
+  });
+};
+//---------------------- Insert User Data-----------------
+//---------------------- Set Username Data -----------------
+const setUserNameData = (data) => {
+  try {
+    if (!data.Username)
+      data.Username = `${data.FirstNameEng}.${data.LastNameEng.substring(
+        0,
+        1
+      )}`;
+    if (!data.Password)
+      data.Password = `${data.FirstNameEng.substring(
+        0,
+        3
+      )}${data.PersonID.substring(data.PersonID.length - 3)}`;
+    return data;
+  } catch (e) {
+    return false;
+  }
+};
 
 //-------------------login-------------------------------------
 
@@ -105,9 +232,12 @@ const login = async (req, res, next) => {
 
 //-------------readall---------------
 const readall = async (req, res) => {
-  console.log("finish");
+  req.body.UserID = req.tokenData.UserID;
+  
   const sql =
-    `SELECT oag_user.* , oag_office.OfficeName as OfficeName FROM oag_user INNER JOIN oag_office ON oag_user.OfficeID = oag_office.OfficeID ORDER BY UserID DESC LIMIT 1000`;
+  `SELECT oag_user.UserID,oag_user.PrefixName,oag_user.FirstName,oag_user.LastName,oag_user.PersonID,oag_user.Username,oag_user.PositionName,oag_user.Role,oag_user.Email,oag_user.Telephone,
+  oag_user.ActiveStatus,oag_office.OfficeName as OfficeName FROM oag_user INNER JOIN oag_office ON oag_user.OfficeID = oag_office.OfficeID ORDER BY UserID DESC LIMIT 1000`;
+    // `SELECT oag_user.* , oag_office.OfficeName as OfficeName FROM oag_user INNER JOIN oag_office ON oag_user.OfficeID = oag_office.OfficeID ORDER BY UserID DESC LIMIT 1000`;
   globalDB.query(sql, (err, results) => {
     if (err) {
       console.error("Error executing query:", err);
@@ -182,8 +312,7 @@ const queryUpdate = (data) => {
       // Iterate over the keys in the data object
       for (const key in data) {
         // Check if the key is a valid column in the table and value is not undefined or empty
-        if (["FirstName", "LastName", "Email", "Telephone", "ActiveStatus", "PersonID", "OfficeID"].includes(key) && data[key] !== undefined && data[key] !== "") {
-          console.log(`this is key : ${key}`);
+        if (["FirstName", "LastName", "Email", "Telephone", "ActiveStatus", "PersonID", "OfficeID","Role"].includes(key) && data[key] !== undefined && data[key] !== "") {
 
           if (key === "ActiveStatus") {
             const selectQuery = `SELECT ActiveStatus FROM oag_user WHERE UserID = ?`
@@ -191,6 +320,8 @@ const queryUpdate = (data) => {
             if (selectResult.length === 0) {
               return res.status(404).json({ error: 'User Not Found' });
             }
+
+            // For toggle active statuss
             const currentStatus = selectResult[0].ActiveStatus;
             const newStatus = currentStatus === 0 ? 1 : 0;
             setClause.push(`${key} = ?`);
